@@ -43,42 +43,19 @@ class MenuManager {
     }
 
     async initCloudImportButton() {
+        for (let i = 0; i < 30 && !window.CloudImportUI; i++) {
+            await new Promise((r) => setTimeout(r, 50));
+        }
         const el = document.getElementById('mm-cloud-import');
         if (!el || !window.CloudImportUI) return;
 
-        try {
-            const status = await CloudImportUI.getStatus();
-            if (!status.available) {
-                el.classList.add('hidden');
-                return;
-            }
-
-            el.classList.remove('hidden');
-            el.innerHTML = `
-                <button type="button" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border text-xs font-bold uppercase tracking-wider transition-colors"
-                    style="background:#f0faf5;border-color:#c5d5cc;color:#1d6b4a">
-                    <i data-lucide="cloud-download" class="w-4 h-4"></i>
-                    <span>${CloudImportUI.buttonLabel(status.platform_name)}</span>
-                </button>`;
-
-            el.querySelector('button')?.addEventListener('click', async () => {
-                try {
-                    await CloudImportUI.run('menus', {
-                        collection: this.config.collection,
-                        onSuccess: async () => {
-                            await this.loadData();
-                            this.render();
-                        },
-                    });
-                } catch (err) {
-                    alert(err.message || 'Import failed');
-                }
-            });
-
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        } catch (err) {
-            el.classList.add('hidden');
-        }
+        await CloudImportUI.renderMenuButton('mm-cloud-import', {
+            collection: this.config.collection,
+            onSuccess: async () => {
+                await this.loadData();
+                this.render();
+            },
+        });
     }
 
     renderShell() {
@@ -94,6 +71,7 @@ class MenuManager {
                     <button onclick="AdminServices.openMenuModal()" class="w-full bg-[#c5a059] text-gray-900 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm hover:bg-[#b59048] transition-colors">
                         + Add New Item
                     </button>
+                    <div id="mm-cloud-import" class="hidden"></div>
                     <div class="flex gap-2">
                         <button onclick="menuMgr.normalize()" class="flex-1 bg-gray-700 border border-gray-600 text-gray-400 hover:text-white py-2 rounded-lg text-xs font-bold uppercase transition-all">Re-index</button>
                         <button onclick="menuMgr.toggleSwap()" id="mm-swap-btn" class="flex-1 bg-gray-700 border border-gray-600 text-gray-400 hover:text-white py-2 rounded-lg text-xs font-bold uppercase transition-all">Swap</button>
@@ -106,7 +84,6 @@ class MenuManager {
                             <button onclick="menuMgr.exportCSV()" class="block w-full text-left px-4 py-2.5 bg-transparent border-0 text-xs text-gray-400 hover:text-white hover:bg-gray-700">Complete Menu</button>
                         </div>
                     </div>
-                    <div id="mm-cloud-import" class="hidden"></div>
                     <button onclick="menuMgr.showMenuQR()" class="w-full bg-[#c5a059]/10 border border-[#c5a059]/30 text-[#c5a059] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#c5a059]/20 transition-all flex items-center justify-center gap-2">
                         <i data-lucide="qr-code" class="w-4 h-4"></i> Menu QR
                     </button>

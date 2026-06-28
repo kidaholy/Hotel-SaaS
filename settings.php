@@ -353,7 +353,7 @@ const AdminSettings = {
                     <i data-lucide="cloud-download" class="w-4 h-4"></i>
                     <span>${CloudImportUI.buttonLabel(status.platform_name)}</span>
                 </button>
-                <p class="text-[10px] text-gray-500 mt-2 text-center">Imports ${this.state.activeCategoryType} categories from the legacy cloud database.</p>`;
+                <p class="text-[10px] text-gray-500 mt-2 text-center">Import menu &amp; store lists from ${status.platform_name || 'the platform'}.</p>`;
 
             document.getElementById('settings-cloud-import-btn')?.addEventListener('click', async () => {
                 try {

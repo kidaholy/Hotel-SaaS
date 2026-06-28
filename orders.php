@@ -552,7 +552,7 @@ renderHeader($title);
             <!-- SIDEBAR/CAROUSEL -->
             <aside class="lg:col-span-3 flex flex-col shrink-0">
                 <div class="glass rounded-xl lg:rounded-2xl border border-gray-700/50 bg-gray-800/80 overflow-hidden transition-all">
-                    <h2 class="px-6 py-4 text-xs font-semibold text-gray-400 border-b border-gray-700/50 uppercase tracking-wider hidden lg:block">
+                    <h2 class="px-6 py-4 text-sm font-bold text-gray-600 border-b border-gray-700/50 uppercase tracking-wider hidden lg:block">
                         FILTER BUCKETS</h2>
                     <div class="flex lg:flex-col overflow-x-auto lg:overflow-y-auto lg:divide-y divide-gray-700/30 custom-scrollbar p-2 lg:p-0 gap-2 lg:gap-0 no-scrollbar">
                         <?php
@@ -576,7 +576,7 @@ renderHeader($title);
                                     <i data-lucide="<?php echo $tab['icon']; ?>" class="w-4 h-4 lg:w-5 lg:h-5"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-xs lg:text-sm font-semibold text-gray-200 whitespace-nowrap"><?php echo $tab['label']; ?></p>
+                                    <p class="text-sm lg:text-base font-bold text-gray-600 whitespace-nowrap"><?php echo $tab['label']; ?></p>
                                     <?php if (isset($tab['data']['avgPrep'])): ?>
                                         <div class="hidden lg:flex items-center gap-2 mt-1">
                                             <span class="text-xs text-gray-500 font-medium"><?php echo $tab['data']['avgPrep']; ?>m avg</span>
@@ -586,7 +586,7 @@ renderHeader($title);
                                     <?php endif; ?>
                                 </div>
                                 <span
-                                    class="text-[10px] lg:text-xs font-bold w-5 h-5 lg:w-7 lg:h-7 rounded-full <?php echo $isActive ? 'bg-[#c5a059] text-gray-900' : 'bg-gray-700 text-gray-400'; ?> flex items-center justify-center shrink-0">
+                                    class="text-xs lg:text-sm font-extrabold w-6 h-6 lg:w-8 lg:h-8 rounded-full <?php echo $isActive ? 'bg-[#c5a059] text-gray-900' : 'bg-gray-200 text-gray-700'; ?> flex items-center justify-center shrink-0">
                                     <?php echo $tab['data']['count'] ?? 0; ?>
                                 </span>
                             </a>
@@ -760,12 +760,12 @@ renderHeader($title);
                             </div>
 
                         <?php elseif (empty($filteredOrders)): ?>
-                            <div class="flex flex-col items-center justify-center h-full py-32 opacity-10 space-y-8">
-                                <span class="text-[180px] leading-none">🍃</span>
-                                <div class="text-center">
-                                    <h3 class="text-3xl font-bold text-gray-400 mb-2">
+                            <div class="flex flex-col items-center justify-center h-full py-32 space-y-8">
+                                <span class="text-[180px] leading-none opacity-20">🍃</span>
+                                <div class="text-center mt-2">
+                                    <h3 class="text-4xl font-extrabold text-gray-600 mb-3">
                                         <?php echo __('admin_orders.quiet_for_now'); ?></h3>
-                                    <p class="text-sm font-medium text-gray-600 uppercase tracking-widest">
+                                    <p class="text-base font-bold text-gray-500 uppercase tracking-widest mt-2">
                                         <?php echo __('admin_orders.no_orders_found'); ?></p>
                                 </div>
                             </div>

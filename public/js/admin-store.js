@@ -120,41 +120,37 @@ function renderTab() {
 }
 
 async function initStoreCloudButtons() {
+    for (let i = 0; i < 30 && !window.CloudImportUI; i++) {
+        await new Promise((r) => setTimeout(r, 50));
+    }
     if (!window.CloudImportUI) return;
 
     try {
-        const status = await CloudImportUI.getStatus();
-        if (!status.available) return;
+        const onSuccess = () => fetchAll();
 
         const invBtn = document.getElementById('store-cloud-import-btn');
         if (invBtn && S.activeTab === 'inventory') {
-            invBtn.classList.remove('hidden');
             invBtn.classList.add('flex');
-            invBtn.querySelector('span').textContent = CloudImportUI.buttonLabel(status.platform_name);
-            invBtn.onclick = async () => {
-                try {
-                    await CloudImportUI.run('stocks', { onSuccess: () => fetchAll() });
-                } catch (err) {
-                    alert(err.message || 'Import failed');
-                }
-            };
+            await CloudImportUI.renderStoreButton('store-cloud-import-btn', { onSuccess });
         }
 
         const catBtn = document.getElementById('store-cat-cloud-import-btn');
         if (catBtn && S.activeTab === 'categories' && S.catActiveSubtab === 'stock') {
             catBtn.classList.remove('hidden');
             catBtn.classList.add('flex');
-            catBtn.querySelector('span').textContent = CloudImportUI.buttonLabel(status.platform_name);
-            catBtn.onclick = async () => {
-                try {
-                    await CloudImportUI.run('categories', {
-                        type: 'stock',
-                        onSuccess: () => fetchAll(),
-                    });
-                } catch (err) {
-                    alert(err.message || 'Import failed');
-                }
-            };
+            const status = await CloudImportUI.getStatus();
+            if (status.available) {
+                catBtn.querySelector('span').textContent = CloudImportUI.buttonLabel(status.platform_name);
+                catBtn.onclick = async () => {
+                    try {
+                        await CloudImportUI.showStorePicker({ onSuccess });
+                    } catch (err) {
+                        alert(err.message || 'Import failed');
+                    }
+                };
+            } else {
+                catBtn.classList.add('hidden');
+            }
         }
     } catch (err) {
         // Hide buttons if cloud import unavailable
@@ -251,9 +247,9 @@ function renderInventory() {
         <div class="flex flex-wrap items-center gap-2">
         <button type="button" id="store-cloud-import-btn" class="hidden items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors w-fit"
             style="background:#f0faf5;border-color:#c5d5cc;color:#1d6b4a">
-          <i data-lucide="cloud-download" class="w-3.5 h-3.5"></i>
-          <span>Import data from Cloud</span>
+          <span>Import from platform</span>
         </button>
+        <span class="store-cloud-import-hint text-[10px] text-gray-500 w-full sm:w-auto"></span>
         <button onclick="exportCSV('inventory')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-400 hover:text-white transition-colors w-fit">
           <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
         </button>
