@@ -55,11 +55,22 @@ try {
         requireAuth(['admin'], 'users:create');
         $data = json_decode(file_get_contents('php://input'), true);
         $password = $data['password'] ?? '';
+        $username = TenantManager::normalizeUsername($data['username'] ?? '');
         $hashed = !empty($password) ? password_hash($password, PASSWORD_BCRYPT) : '';
 
-        $db->create(['data' => [
+        if ($username === '' || !TenantManager::isValidUsername($username)) {
+            sendJson(['message' => 'Valid username is required (3–32 characters)'], 400);
+        }
+
+        $tenantId = $_SESSION['tenant_id'] ?? TenantManager::DEFAULT_TENANT_ID;
+        if (!TenantManager::isUsernameAvailableInTenant($tenantId, $username)) {
+            sendJson(['message' => 'Username already taken in this hotel'], 400);
+        }
+
+        $created = $db->create(['data' => [
             'name'               => $data['name'],
-            'email'              => $data['email'],
+            'username'           => $username,
+            'email'              => $data['email'] ?? '',
             'password'           => $hashed,
             'plainPassword'      => $password,
             'role'               => $data['role'] ?? 'cashier',
@@ -69,7 +80,25 @@ try {
             'permissions'        => $data['permissions'] ?? [],
         ]]);
 
-        sendJson(['message' => 'User created', 'credentials' => ['email' => $data['email'], 'password' => $password]], 201);
+        $existingMap = platformDb('tenant_users')->findFirst([
+            'where' => [
+                'tenant_id' => $tenantId,
+                'user_id' => $created['id'],
+            ],
+        ]);
+        if (!$existingMap) {
+            platformDb('tenant_users')->create(['data' => [
+                'tenant_id' => $tenantId,
+                'user_id' => $created['id'],
+                'username' => $username,
+                'email' => strtolower($data['email'] ?? ''),
+                'name' => $data['name'],
+                'role' => $data['role'] ?? 'cashier',
+                'created_at' => date('c'),
+            ]]);
+        }
+
+        sendJson(['message' => 'User created', 'credentials' => ['username' => $username, 'password' => $password]], 201);
     }
 
     if ($method === 'PUT') {
@@ -90,7 +119,25 @@ try {
 
         $update = [];
         if (!empty($data['name']))    $update['name']               = $data['name'];
-        if (!empty($data['email']))   $update['email']              = $data['email'];
+        if (!empty($data['username'])) {
+            $username = TenantManager::normalizeUsername($data['username']);
+            if (!TenantManager::isValidUsername($username)) {
+                sendJson(['message' => 'Invalid username'], 400);
+            }
+            $tenantId = $_SESSION['tenant_id'] ?? TenantManager::DEFAULT_TENANT_ID;
+            $conflict = platformDb('tenant_users')->findFirst([
+                'where' => [
+                    'tenant_id' => $tenantId,
+                    'username' => ['mode' => 'insensitive', 'equals' => $username],
+                    'user_id' => ['not' => $id],
+                ],
+            ]);
+            if ($conflict) {
+                sendJson(['message' => 'Username already taken in this hotel'], 400);
+            }
+            $update['username'] = $username;
+        }
+        if (array_key_exists('email', $data))   $update['email']              = $data['email'];
         if (!empty($data['role']))    $update['role']               = $data['role'];
         if (array_key_exists('floorId', $data)) $update['floorId']  = $data['floorId'];
         if (isset($data['assignedCategories'])) $update['assignedCategories'] = $data['assignedCategories'];
@@ -102,6 +149,20 @@ try {
         }
 
         $db->update(['where' => ['id' => $id], 'data' => $update]);
+
+        if (!empty($update['username'])) {
+            $tenantId = $_SESSION['tenant_id'] ?? TenantManager::DEFAULT_TENANT_ID;
+            $mapped = platformDb('tenant_users')->findFirst([
+                'where' => ['tenant_id' => $tenantId, 'user_id' => $id],
+            ]);
+            if ($mapped) {
+                platformDb('tenant_users')->update([
+                    'where' => ['id' => $mapped['id']],
+                    'data' => ['username' => $update['username']],
+                ]);
+            }
+        }
+
         sendJson(['message' => 'User updated']);
     }
 

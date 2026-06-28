@@ -1,0 +1,525 @@
+/**
+ * Hotel SaaS — Global light green theme (matches landing page)
+ */
+:root {
+    --green: #1d6b4a;
+    --green-dark: #145239;
+    --green-light: #e8f5ef;
+    --green-soft: #f0faf5;
+    --green-mid: #2d8a5e;
+    --text: #0f1f1a;
+    --muted: #3d5249;
+    --border: #e2ebe6;
+    --white: #ffffff;
+    --shadow: 0 4px 24px rgba(26, 46, 40, 0.08);
+    --shadow-lg: 0 20px 50px rgba(26, 46, 40, 0.1);
+    --app-bg: #f7faf8;
+    --app-surface: #ffffff;
+    --app-surface-2: #f0f5f2;
+
+    /* HSL tokens for Tailwind config in layout.php */
+    --background: 150 20% 97%;
+    --foreground: 160 25% 14%;
+    --muted-hsl: 150 12% 94%;
+    --muted-foreground: 160 12% 32%;
+    --accent: 152 56% 27%;
+    --accent-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 25% 14%;
+    --border-hsl: 150 14% 90%;
+    --input: 150 14% 90%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 25% 14%;
+    --primary: 152 56% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 150 20% 95%;
+    --secondary-foreground: 160 25% 14%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 152 56% 27%;
+    --radius: 1rem;
+}
+
+/* ── App shell (layout.php) ── */
+body.theme-light {
+    background-color: var(--app-bg) !important;
+    color: var(--text) !important;
+}
+
+body.theme-light .glass {
+    background: var(--app-surface);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+body.theme-light .sidebar-link {
+    color: var(--muted);
+}
+body.theme-light .sidebar-link:hover {
+    background-color: var(--green-soft);
+    color: var(--green);
+}
+body.theme-light .sidebar-link.active {
+    background-color: var(--green-light);
+    color: var(--green);
+    font-weight: 600;
+}
+
+body.theme-light ::-webkit-scrollbar-thumb {
+    background: rgba(29, 107, 74, 0.25);
+}
+body.theme-light ::-webkit-scrollbar-thumb:hover {
+    background: rgba(29, 107, 74, 0.4);
+}
+
+/* ── Legacy dark Tailwind class overrides ── */
+body.theme-light .bg-\[\#0f1110\],
+body.theme-light .bg-\[\#111413\],
+body.theme-light .bg-\[\#0a0a0a\],
+body.theme-light .bg-\[\#151817\] {
+    background-color: var(--app-bg) !important;
+}
+
+body.theme-light .bg-gray-900,
+body.theme-light .bg-gray-900\/40,
+body.theme-light .bg-gray-900\/50,
+body.theme-light .bg-gray-900\/80 {
+    background-color: var(--app-surface) !important;
+}
+
+body.theme-light .bg-gray-800,
+body.theme-light .bg-gray-800\/80,
+body.theme-light .bg-gray-800\/50 {
+    background-color: var(--app-surface-2) !important;
+}
+
+body.theme-light .bg-black\/95,
+body.theme-light .bg-black\/80 {
+    background-color: rgba(15, 26, 22, 0.85) !important;
+}
+
+body.theme-light .hover\:bg-gray-800:hover,
+body.theme-light .hover\:bg-gray-700:hover {
+    background-color: var(--green-soft) !important;
+}
+
+body.theme-light .text-white {
+    color: var(--text) !important;
+}
+
+body.theme-light .border-gray-700,
+body.theme-light .border-gray-700\/50 {
+    border-color: var(--border) !important;
+}
+
+body.theme-light .border-white\/5,
+body.theme-light .border-white\/10,
+body.theme-light .border-white\/20 {
+    border-color: var(--border) !important;
+}
+
+body.theme-light .bg-white\/5,
+body.theme-light .bg-white\/10 {
+    background-color: var(--green-soft) !important;
+}
+
+body.theme-light .hover\:bg-white\/10:hover {
+    background-color: var(--green-light) !important;
+}
+
+body.theme-light .hover\:text-white:hover {
+    color: var(--green) !important;
+}
+
+/* Gold → green accent remap */
+body.theme-light .text-\[\#c5a059\],
+body.theme-light .text-\[\#d4af37\],
+body.theme-light .hover\:text-\[\#c5a059\]:hover {
+    color: var(--green) !important;
+}
+
+body.theme-light .bg-\[\#c5a059\],
+body.theme-light .bg-\[\#c5a059\]\/10,
+body.theme-light .bg-\[\#c5a059\]\/20 {
+    background-color: var(--green-light) !important;
+}
+
+body.theme-light .hover\:bg-\[\#c5a059\]\/5:hover,
+body.theme-light .hover\:bg-\[\#c5a059\]\/10:hover {
+    background-color: var(--green-soft) !important;
+}
+
+body.theme-light .border-\[\#c5a059\],
+body.theme-light .border-\[\#c5a059\]\/10,
+body.theme-light .border-\[\#c5a059\]\/20,
+body.theme-light .border-\[\#c5a059\]\/40 {
+    border-color: rgba(29, 107, 74, 0.35) !important;
+}
+
+body.theme-light .focus\:border-\[\#c5a059\]:focus {
+    border-color: var(--green) !important;
+}
+
+body.theme-light .gold-glow {
+    text-shadow: none;
+    color: var(--green) !important;
+}
+
+body.theme-light input,
+body.theme-light select,
+body.theme-light textarea {
+    color: var(--text);
+}
+
+body.theme-light input::placeholder,
+body.theme-light textarea::placeholder {
+    color: #9aada4;
+}
+
+/* ── Auth pages (login, register, super-admin) ── */
+.auth-page {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--green-soft) 0%, var(--white) 50%);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-page-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.auth-brand-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--green-light);
+    color: var(--green);
+    display: grid;
+    place-items: center;
+}
+
+.auth-brand-name {
+    font-weight: 800;
+    font-size: 1.15rem;
+    line-height: 1.2;
+}
+
+.auth-brand-tag {
+    font-size: 0.75rem;
+    color: #3d5249;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.auth-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+.auth-card-wide { max-width: 560px; }
+
+.auth-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.25rem;
+}
+
+.auth-subtitle {
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #3d5249;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #2d4038;
+    margin-bottom: 0.5rem;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 0.95rem 1.1rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(29, 107, 74, 0.12);
+}
+
+.auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--green);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.9375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 4px 14px rgba(29, 107, 74, 0.3);
+}
+
+.auth-btn:hover {
+    background: var(--green-dark);
+    transform: translateY(-1px);
+}
+
+.auth-link {
+    color: var(--green);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-decoration: none;
+}
+
+.auth-link:hover { color: var(--green-dark); }
+
+.auth-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auth-footer-links {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.auth-muted {
+    color: #3d5249;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.auth-footer-links .auth-muted {
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+/* Link index.php landing to shared vars */
+#saas-landing {
+    --green: #1d6b4a;
+    --green-dark: #145239;
+    --green-light: #e8f5ef;
+    --green-soft: #f0faf5;
+}
+
+/* POS / kitchen full-screen pages */
+body.theme-light .text-blue-400 { color: #1d6b4a !important; }
+
+/* ═══════════════════════════════════════════════════
+   TYPOGRAPHY — bold, readable, high contrast
+═══════════════════════════════════════════════════ */
+html {
+    font-size: 17px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body.theme-light,
+.auth-page,
+#saas-landing {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.65;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.theme-light h1,
+body.theme-light h2,
+body.theme-light h3,
+body.theme-light h4,
+.auth-page h1,
+#saas-landing h1,
+#saas-landing h2,
+#saas-landing h3 {
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+}
+
+body.theme-light p,
+body.theme-light li,
+body.theme-light td,
+body.theme-light th,
+body.theme-light label,
+body.theme-light button,
+body.theme-light a {
+    font-weight: inherit;
+}
+
+/* Bump tiny Tailwind text utilities */
+body.theme-light .text-\[8px\],
+body.theme-light .text-\[9px\],
+body.theme-light .text-\[10px\] {
+    font-size: 0.8125rem !important;   /* 13px */
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+}
+
+body.theme-light .text-xs {
+    font-size: 0.875rem !important;    /* 14px */
+    font-weight: 600 !important;
+}
+
+body.theme-light .text-sm {
+    font-size: 1rem !important;        /* 17px */
+    font-weight: 500 !important;
+}
+
+body.theme-light .text-base {
+    font-size: 1.0625rem !important;
+    font-weight: 500 !important;
+}
+
+body.theme-light .text-lg {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+}
+
+body.theme-light .text-xl {
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+}
+
+body.theme-light .text-2xl,
+body.theme-light .text-3xl,
+body.theme-light .text-4xl {
+    font-weight: 800 !important;
+}
+
+body.theme-light .font-medium { font-weight: 600 !important; }
+body.theme-light .font-semibold { font-weight: 700 !important; }
+body.theme-light .font-bold { font-weight: 800 !important; }
+body.theme-light .font-black { font-weight: 900 !important; }
+
+/* Darker, bolder muted text */
+body.theme-light .text-gray-300 { color: #2d4038 !important; font-weight: 600 !important; }
+body.theme-light .text-gray-400 { color: #3d5249 !important; font-weight: 600 !important; }
+body.theme-light .text-gray-500 { color: #3d5249 !important; font-weight: 500 !important; }
+body.theme-light .text-gray-600 { color: #2d4038 !important; font-weight: 600 !important; }
+
+body.theme-light .text-white {
+    color: var(--text) !important;
+    font-weight: 600;
+}
+
+/* Nav & sidebar */
+body.theme-light nav a,
+body.theme-light .sidebar-link {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+}
+
+body.theme-light .sidebar-link.active {
+    font-weight: 700 !important;
+}
+
+/* Forms — larger, bolder */
+body.theme-light input,
+body.theme-light select,
+body.theme-light textarea {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    color: var(--text) !important;
+}
+
+body.theme-light input::placeholder,
+body.theme-light textarea::placeholder {
+    color: #6b8076 !important;
+    font-weight: 500 !important;
+}
+
+/* Tables */
+body.theme-light table th {
+    font-size: 0.8125rem !important;
+    font-weight: 800 !important;
+    color: #2d4038 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+body.theme-light table td {
+    font-size: 0.9375rem !important;
+    font-weight: 500 !important;
+    color: var(--text) !important;
+}
+
+/* Cards & metrics */
+body.theme-light .metric-value,
+body.theme-light .metric-card p:last-child {
+    font-weight: 800 !important;
+}
+
+body.theme-light .metric-card p:first-child,
+body.theme-light .glass p.text-sm {
+    font-weight: 600 !important;
+    color: #3d5249 !important;
+}

@@ -98,8 +98,8 @@ $currentUser = getCurrentUser();
                         <input type="text" name="name" required class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-white focus:border-[#c5a059] focus:outline-none transition-colors placeholder:text-gray-600" placeholder="e.g. John Doe">
                     </div>
                     <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-400 pl-2">Email Address</label>
-                        <input type="email" name="email" required class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-white focus:border-[#c5a059] focus:outline-none transition-colors placeholder:text-gray-600" placeholder="e.g. john@abehotel.com">
+                        <label class="text-xs font-semibold text-gray-400 pl-2">Username</label>
+                        <input type="text" name="username" required pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{1,30}[a-zA-Z0-9]" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-white focus:border-[#c5a059] focus:outline-none transition-colors placeholder:text-gray-600" placeholder="e.g. john.doe">
                     </div>
                 </div>
 

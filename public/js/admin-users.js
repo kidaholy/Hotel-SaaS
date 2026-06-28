@@ -11,7 +11,7 @@ const state = {
     revealedPasswords: {},
     formData: {
         name: '',
-        email: '',
+        username: '',
         password: '',
         role: 'cashier',
         floorId: '',
@@ -121,7 +121,7 @@ function renderUserCard(u) {
                     </div>
                     <div class="min-w-0">
                         <h3 class="text-base font-bold text-gray-200 truncate ${isDeactivated ? 'line-through opacity-40' : ''}">${u.name}</h3>
-                        <p class="text-[10px] font-semibold text-gray-500 truncate">${u.email}</p>
+                        <p class="text-[10px] font-semibold text-gray-500 truncate">@${u.username || u.email || 'user'}</p>
                     </div>
                 </div>
 
@@ -221,7 +221,7 @@ window.togglePassword = (id) => {
 window.resetForm = () => {
     state.editingUser = null;
     state.formData = {
-        name: '', email: '', password: '', role: 'cashier',
+        name: '', username: '', password: '', role: 'cashier',
         floorId: '', assignedCategories: [], permissions: []
     };
     renderForm();
@@ -282,7 +282,7 @@ window.editUser = (id) => {
         state.editingUser = user;
         state.formData = {
             name: user.name,
-            email: user.email,
+            username: user.username || '',
             password: '', 
             role: user.role,
             floorId: user.floorId || '',
@@ -319,7 +319,7 @@ function renderForm() {
     
     // Inputs
     form.querySelector('[name="name"]').value = state.formData.name;
-    form.querySelector('[name="email"]').value = state.formData.email;
+    form.querySelector('[name="username"]').value = state.formData.username;
     form.querySelector('[name="password"]').value = state.formData.password;
 
     // Roles selection
@@ -428,7 +428,7 @@ window.handleFormSubmit = async (e) => {
     // Collect data
     const data = {
         name: e.target.name.value,
-        email: e.target.email.value,
+        username: e.target.username.value,
         password: e.target.password.value,
         role: state.formData.role,
         floorId: e.target['floor-select']?.value,
@@ -448,7 +448,7 @@ window.handleFormSubmit = async (e) => {
             closeModal();
             fetchAll();
             if (result.credentials) {
-                showNotification(`User: ${result.credentials.email}<br>Pass: ${result.credentials.password}`, 'Creation Successful');
+                showNotification(`User: @${result.credentials.username}<br>Pass: ${result.credentials.password}`, 'Creation Successful');
             } else {
                 showToast('Success', result.message);
             }

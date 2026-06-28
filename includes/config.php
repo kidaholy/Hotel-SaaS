@@ -6,6 +6,8 @@
 // Define directory paths
 define('BASE_DIR', dirname(__DIR__));
 define('DATA_DIR', BASE_DIR . '/data');
+define('PLATFORM_DB_PATH', DATA_DIR . '/platform.sqlite');
+define('TENANTS_DIR', DATA_DIR . '/tenants');
 define('INCLUDES_DIR', BASE_DIR . '/includes');
 define('PAGES_DIR', BASE_DIR . '/pages');
 define('API_DIR', BASE_DIR . '/api');
@@ -15,6 +17,10 @@ date_default_timezone_set('Africa/Addis_Ababa'); // Align with user's local time
 
 // Authentication settings
 define('SESSION_LIFETIME', 7 * 24 * 60 * 60); // 7 days in seconds
+
+// Platform super admin (override via environment)
+define('PLATFORM_SUPER_ADMIN_USERNAME', getenv('PLATFORM_SUPER_ADMIN_USERNAME') ?: 'kidayos2014@gmail.com');
+define('PLATFORM_SUPER_ADMIN_PASSWORD', getenv('PLATFORM_SUPER_ADMIN_PASSWORD') ?: '111111');
 
 // Production Settings (Disable display errors to keep UI clean)
 ini_set('display_errors', 0);

@@ -6,12 +6,14 @@
 require_once 'includes/layout.php';
 require_once 'includes/auth.php';
 require_once 'includes/SettingsManager.php';
+require_once 'includes/TenantManager.php';
 
 // Auth: admin or specifically permitted
 requireAuth(['admin'], 'settings:view');
 
 $manager = new SettingsManager();
 $settings = $manager->getAllSettings();
+$platformBranding = TenantManager::getPlatformBrandingVars();
 
 // Fetch all data
 $menuCategories = $manager->getCategories('menu');
@@ -49,23 +51,31 @@ renderHeader("Settings");
             <!-- LEFT SIDEBAR -->
             <aside class="lg:col-span-3 space-y-5 lg:sticky lg:top-8 h-fit">
 
-                <!-- Current Logo Card -->
+                <!-- Platform Logo (read-only) -->
                 <div class="bg-gray-800 border border-gray-700/50 rounded-xl p-6 text-center relative overflow-hidden group">
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Logo Preview</p>
-                    <div class="w-20 h-20 mx-auto rounded-full overflow-hidden border border-gray-600 bg-gray-900 transition-transform duration-500 group-hover:scale-105">
-                        <img id="sidebarLogoPreview" src="<?php echo htmlspecialchars($branding['logo_url'] ?? ''); ?>"
-                             class="w-full h-full object-cover" alt="Logo">
+                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Platform Logo</p>
+                    <div class="w-20 h-20 mx-auto rounded-full overflow-hidden border border-gray-600 bg-gray-900 flex items-center justify-center">
+                        <?php if (!empty($platformBranding['publicLogoUrl'])): ?>
+                            <img src="<?php echo htmlspecialchars($platformBranding['publicLogoUrl']); ?>" class="w-full h-full object-cover" alt="Platform logo">
+                        <?php else: ?>
+                            <span class="text-[10px] font-bold text-gray-500">Platform</span>
+                        <?php endif; ?>
                     </div>
                     <h3 id="sidebarAppName" class="text-base font-bold text-gray-200 mt-3"><?php echo htmlspecialchars($branding['app_name'] ?? 'ABE HOTEL'); ?></h3>
                     <p id="sidebarAppTagline" class="text-xs text-gray-500 mt-1"><?php echo htmlspecialchars($branding['app_tagline'] ?? 'HOTEL MANAGEMENT SYSTEM'); ?></p>
+                    <p class="text-[10px] text-gray-600 mt-3 leading-relaxed">Logo and favicon are managed by the platform administrator.</p>
                 </div>
 
                 <!-- Nav Preview -->
                 <div class="bg-gray-800 border border-gray-700/50 rounded-xl p-4">
                     <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Preview in Navigation</p>
                     <div class="flex items-center gap-3 bg-gray-900 rounded-lg p-3">
-                        <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-700 border border-gray-600 flex-shrink-0">
-                            <img id="navLogoPreview" src="<?php echo htmlspecialchars($branding['logo_url'] ?? ''); ?>" class="w-full h-full object-cover">
+                        <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-700 border border-gray-600 flex-shrink-0 flex items-center justify-center">
+                            <?php if (!empty($platformBranding['publicLogoUrl'])): ?>
+                                <img src="<?php echo htmlspecialchars($platformBranding['publicLogoUrl']); ?>" class="w-full h-full object-cover" alt="">
+                            <?php else: ?>
+                                <span class="text-[8px] font-bold text-gray-500">LOGO</span>
+                            <?php endif; ?>
                         </div>
                         <div>
                             <p id="navAppName" class="text-xs font-bold text-gray-200 leading-none"><?php echo htmlspecialchars($branding['app_name'] ?? 'ABE HOTEL'); ?></p>
@@ -78,7 +88,9 @@ renderHeader("Settings");
                 <div class="bg-gray-800 border border-gray-700/50 rounded-xl p-4">
                     <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Browser Tab</p>
                     <div class="bg-gray-900 rounded-t-lg py-2.5 px-4 border border-gray-700 flex items-center gap-2">
-                        <img id="tabFaviconPreview" src="<?php echo htmlspecialchars($branding['favicon_url'] ?? ($branding['logo_url'] ?? '')); ?>" class="w-4 h-4 object-contain">
+                        <?php if (!empty($platformBranding['faviconUrl'])): ?>
+                            <img src="<?php echo htmlspecialchars($platformBranding['faviconUrl']); ?>" class="w-4 h-4 object-contain" alt="">
+                        <?php endif; ?>
                         <span id="tabAppName" class="text-xs text-gray-400 truncate"><?php echo htmlspecialchars($branding['app_name'] ?? 'Hotel Management'); ?></span>
                     </div>
                 </div>
@@ -95,21 +107,6 @@ renderHeader("Settings");
                         <i data-lucide="external-link" class="w-3 h-3"></i> Open Webmail
                     </a>
                 </div>
-
-                <!-- Logo Tips -->
-                <div class="bg-gray-800 border border-gray-700/50 rounded-xl p-5 space-y-3">
-                    <h3 class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#c5a059]">
-                        <i data-lucide="help-circle" class="w-4 h-4"></i> Logo Tips
-                    </h3>
-                    <ul class="space-y-3">
-                        <?php foreach (['Use square images (1:1 ratio)', 'Minimum 200×200 pixels', 'PNG, JPG, GIF, or WebP format', 'Max upload size: 5MB'] as $i => $tip): ?>
-                        <li class="flex items-center gap-3">
-                            <div class="w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0"><?php echo str_pad($i+1, 2, '0', STR_PAD_LEFT); ?></div>
-                            <span class="text-xs text-gray-400 leading-tight"><?php echo $tip; ?></span>
-                        </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
             </aside>
 
             <!-- RIGHT PANEL -->
@@ -121,82 +118,38 @@ renderHeader("Settings");
                     <!-- Tab Nav -->
                     <div class="flex gap-1 border-b border-gray-700/50 px-6 pt-5 overflow-x-auto no-scrollbar">
                         <button onclick="AdminSettings.switchTab('branding')" id="tab-branding"
-                            class="tab-btn px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 border-[#c5a059] text-[#c5a059] transition-all">Branding</button>
+                            class="tab-btn px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 border-[#c5a059] text-[#c5a059] transition-all">Hotel Profile</button>
                         <button onclick="AdminSettings.switchTab('categories')" id="tab-categories"
                             class="tab-btn px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-200 transition-all">Categories</button>
                         <button onclick="AdminSettings.switchTab('tables')" id="tab-tables"
                             class="tab-btn px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-200 transition-all">Tables & Floors</button>
                     </div>
 
-                    <!-- TAB: Branding -->
+                    <!-- TAB: Hotel Profile -->
                     <div id="branding-section" class="tab-content p-8 space-y-8">
 
                         <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-bold text-gray-200">System Branding</h3>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-200">Hotel Profile</h3>
+                                <p class="text-xs text-gray-500 mt-1">Update your hotel name and tagline. Changes sync to the platform admin hotel list.</p>
+                            </div>
                             <button onclick="AdminSettings.saveAll()" class="flex items-center gap-2 px-5 py-2.5 bg-[#c5a059] text-gray-900 text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-[#b59048] transition-colors shadow-sm">
-                                <i data-lucide="save" class="w-4 h-4"></i> Save Branding
+                                <i data-lucide="save" class="w-4 h-4"></i> Save Profile
                             </button>
-                        </div>
-
-                        <!-- Logo Upload -->
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Logo Upload</label>
-                                <div class="flex p-1 bg-gray-900 rounded-lg border border-gray-700 gap-1">
-                                    <button onclick="AdminSettings.setUploadMode('url')" id="mode-url"
-                                        class="px-4 py-1.5 rounded-md text-xs font-bold uppercase transition-all bg-[#c5a059] text-gray-900 shadow">
-                                        <i data-lucide="link-2" class="w-3 h-3 inline-block mr-1"></i> URL
-                                    </button>
-                                    <button onclick="AdminSettings.setUploadMode('file')" id="mode-file"
-                                        class="px-4 py-1.5 rounded-md text-xs font-bold uppercase transition-all text-gray-500 hover:text-gray-200">
-                                        <i data-lucide="file-up" class="w-3 h-3 inline-block mr-1"></i> Upload
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="url-input-container" class="space-y-4">
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-500">Logo Image URL</label>
-                                    <input type="url" id="logoUrlInput" value="<?php echo htmlspecialchars($branding['logo_url'] ?? ''); ?>"
-                                        placeholder="Enter image URL..."
-                                        oninput="AdminSettings.updatePreviews(this.value)"
-                                        class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-[#c5a059] transition-colors">
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-500">Favicon URL (Tab Icon)</label>
-                                    <div class="flex gap-4">
-                                        <div class="w-11 h-11 rounded-lg border border-gray-700 bg-gray-900 flex items-center justify-center overflow-hidden shrink-0">
-                                            <img id="faviconPreview" src="<?php echo htmlspecialchars($branding['favicon_url'] ?? ($branding['logo_url'] ?? '')); ?>"
-                                                class="w-6 h-6 object-contain"
-                                                onerror="this.src='/assets/favicon.ico'">
-                                        </div>
-                                        <input type="url" id="faviconUrlInput" value="<?php echo htmlspecialchars($branding['favicon_url'] ?? ($branding['logo_url'] ?? '')); ?>"
-                                            placeholder="Enter favicon URL..."
-                                            oninput="document.getElementById('faviconPreview').src = this.value"
-                                            class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-[#c5a059] transition-colors">
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="file-input-container" class="hidden relative group">
-                                <div id="logo-drop-zone" onclick="document.getElementById('logoFileInput').click()"
-                                    class="border-2 border-dashed border-gray-600 rounded-xl p-10 text-center hover:border-[#c5a059] transition-all cursor-pointer">
-                                    <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-gray-500 group-hover:text-[#c5a059] transition-colors mb-3"></i>
-                                    <p id="logo-upload-label" class="text-xs font-bold uppercase text-gray-500 group-hover:text-gray-200 transition-colors">Drop logo or click to upload</p>
-                                    <p class="text-[10px] text-gray-600 mt-2">JPG, PNG, WebP, GIF · Max 5MB</p>
-                                    <input type="file" id="logoFileInput" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" onchange="AdminSettings.handleFileUpload(event)">
-                                </div>
-                            </div>
                         </div>
 
                         <!-- App Info -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
-                                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Application Name</label>
+                                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Hotel Name</label>
                                 <input type="text" id="appNameInput" value="<?php echo htmlspecialchars($branding['app_name'] ?? ''); ?>"
+                                    oninput="AdminSettings.updateNamePreviews(this.value)"
                                     class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-[#c5a059] transition-colors">
                             </div>
                             <div class="space-y-2">
-                                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Application Tagline</label>
+                                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Hotel Tagline</label>
                                 <input type="text" id="appTaglineInput" value="<?php echo htmlspecialchars($branding['app_tagline'] ?? ''); ?>"
+                                    oninput="document.getElementById('sidebarAppTagline').textContent = this.value"
                                     class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-[#c5a059] transition-colors">
                             </div>
                         </div>
@@ -257,6 +210,8 @@ renderHeader("Settings");
                                 <i data-lucide="truck" class="w-3.5 h-3.5 inline-block mr-1.5"></i> Distribution
                             </button>
                         </div>
+
+                        <div id="settings-cloud-import" class="hidden"></div>
 
                         <!-- Add form -->
                         <div class="p-5 bg-gray-900 border border-gray-700/50 rounded-xl space-y-3">
@@ -355,7 +310,6 @@ const AdminSettings = {
     state: {
         activeTab: 'branding',
         activeCategoryType: 'menu',
-        uploadMode: 'url',
         data: {
             categories: {
                 menu: <?php echo json_encode($menuCategories); ?>,
@@ -384,85 +338,56 @@ const AdminSettings = {
         const section = document.getElementById(`${tab}-section`);
         if (section) section.classList.remove('hidden');
 
-        if (tab === 'categories') this.renderCategories();
+        if (tab === 'categories') {
+            this.renderCategories();
+            this.initCloudImportButton();
+        }
         if (tab === 'tables') this.renderTables();
     },
 
-    setUploadMode(mode) {
-        this.state.uploadMode = mode;
-        const btnUrl  = document.getElementById('mode-url');
-        const btnFile = document.getElementById('mode-file');
-        const urlIn   = document.getElementById('url-input-container');
-        const fileIn  = document.getElementById('file-input-container');
-        const on  = 'px-4 py-1.5 rounded-md text-xs font-bold uppercase transition-all bg-[#c5a059] text-gray-900 shadow';
-        const off = 'px-4 py-1.5 rounded-md text-xs font-bold uppercase transition-all text-gray-500 hover:text-gray-200';
-        if (mode === 'url') {
-            btnUrl.className = on; btnFile.className = off;
-            urlIn.classList.remove('hidden'); fileIn.classList.add('hidden');
-        } else {
-            btnFile.className = on; btnUrl.className = off;
-            urlIn.classList.add('hidden'); fileIn.classList.remove('hidden');
-        }
+    updateNamePreviews(name) {
+        ['sidebarAppName', 'navAppName', 'tabAppName'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = name;
+        });
     },
 
-    async handleFileUpload(e) {
-        const file = (e.target && e.target.files && e.target.files[0]) || (e.dataTransfer && e.dataTransfer.files[0]);
-        if (!file) return;
-        await this.processLogoFile(file);
-        if (e.target) e.target.value = '';
-    },
-
-    async processLogoFile(file) {
-        if (!file.type.startsWith('image/')) {
-            this.showAlert('Please choose an image file', 'error');
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            this.showAlert('File too large (max 5MB)', 'error');
-            return;
-        }
-
-        const label = document.getElementById('logo-upload-label');
-        if (label) label.textContent = 'Uploading...';
+    async initCloudImportButton() {
+        const el = document.getElementById('settings-cloud-import');
+        if (!el || !window.CloudImportUI) return;
 
         try {
-            const logo = await this.compressImageFile(file, 200);
-            const favicon = await this.compressImageFile(file, 64);
+            const status = await CloudImportUI.getStatus();
+            if (!status.available) {
+                el.classList.add('hidden');
+                el.innerHTML = '';
+                return;
+            }
 
-            await this.putSetting('logo_url', logo);
-            await this.putSetting('favicon_url', favicon);
+            el.classList.remove('hidden');
+            el.innerHTML = `
+                <button type="button" id="settings-cloud-import-btn"
+                    class="w-full flex items-center justify-center gap-2 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-colors"
+                    style="background:#f0faf5;border-color:#c5d5cc;color:#1d6b4a">
+                    <i data-lucide="cloud-download" class="w-4 h-4"></i>
+                    <span>${CloudImportUI.buttonLabel(status.platform_name)}</span>
+                </button>
+                <p class="text-[10px] text-gray-500 mt-2 text-center">Imports ${this.state.activeCategoryType} categories from the legacy cloud database.</p>`;
 
-            this.updatePreviews(logo, favicon);
-            this.showAlert('Logo and favicon uploaded successfully');
+            document.getElementById('settings-cloud-import-btn')?.addEventListener('click', async () => {
+                try {
+                    await CloudImportUI.run('categories', {
+                        type: this.state.activeCategoryType,
+                        onSuccess: () => location.reload(),
+                    });
+                } catch (err) {
+                    this.showAlert(err.message, 'error');
+                }
+            });
+            lucide.createIcons();
         } catch (err) {
-            this.showAlert(err.message || 'Upload failed', 'error');
-        } finally {
-            if (label) label.textContent = 'Drop logo or click to upload';
+            el.classList.add('hidden');
         }
-    },
-
-    compressImageFile(file, size) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = size;
-                    canvas.height = size;
-                    const ctx = canvas.getContext('2d');
-                    const scale = Math.max(size / img.width, size / img.height);
-                    const w = img.width * scale;
-                    const h = img.height * scale;
-                    ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-                    resolve(canvas.toDataURL('image/jpeg', 0.9));
-                };
-                img.onerror = () => reject(new Error('Could not read image file'));
-                img.src = reader.result;
-            };
-            reader.onerror = () => reject(new Error('Could not read file'));
-            reader.readAsDataURL(file);
-        });
     },
 
     async putSetting(key, value) {
@@ -481,21 +406,6 @@ const AdminSettings = {
         return data;
     },
 
-    updatePreviews(url, faviconUrl = null) {
-        const fav = faviconUrl || document.getElementById('faviconUrlInput')?.value || url;
-        ['sidebarLogoPreview', 'navLogoPreview', 'logoUrlInput'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                if (el.tagName === 'INPUT') el.value = url;
-                else el.src = url;
-            }
-        });
-        const favEl = document.getElementById('faviconPreview');
-        const favInput = document.getElementById('faviconUrlInput');
-        if (favEl) favEl.src = fav;
-        if (favInput) favInput.value = fav;
-    },
-
     // --- CATEGORIES ---
     switchCategoryType(type) {
         this.state.activeCategoryType = type;
@@ -509,6 +419,7 @@ const AdminSettings = {
         });
         document.getElementById('cat-form-title').textContent = `Add New ${type.charAt(0).toUpperCase() + type.slice(1)} Category`;
         this.renderCategories();
+        if (this.state.activeTab === 'categories') this.initCloudImportButton();
     },
 
     renderCategories() {
@@ -766,35 +677,11 @@ const AdminSettings = {
         setTimeout(() => el.classList.add('hidden'), 4000);
     },
 
-    setupLogoDropZone() {
-        const zone = document.getElementById('logo-drop-zone');
-        if (!zone) return;
-        ['dragenter', 'dragover'].forEach(evt => {
-            zone.addEventListener(evt, (e) => {
-                e.preventDefault();
-                zone.classList.add('border-[#c5a059]', 'bg-[#c5a059]/5');
-            });
-        });
-        ['dragleave', 'drop'].forEach(evt => {
-            zone.addEventListener(evt, (e) => {
-                e.preventDefault();
-                zone.classList.remove('border-[#c5a059]', 'bg-[#c5a059]/5');
-            });
-        });
-        zone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const file = e.dataTransfer?.files?.[0];
-            if (file) this.processLogoFile(file);
-        });
-    },
-
     async saveAll() {
         const payload = {
             branding: {
                 app_name: document.getElementById('appNameInput').value,
                 app_tagline: document.getElementById('appTaglineInput').value,
-                logo_url: document.getElementById('logoUrlInput').value,
-                favicon_url: document.getElementById('faviconUrlInput').value || document.getElementById('logoUrlInput').value
             },
             configuration: {
                 vat_rate: parseFloat(document.getElementById('vatRateInput').value),
@@ -803,9 +690,17 @@ const AdminSettings = {
             }
         };
         try {
-            for(let k in payload.branding) await fetch('api/admin/settings.php', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: k, value: payload.branding[k], type: 'string' }) });
-            for(let k in payload.configuration) await fetch('api/admin/settings.php', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: k, value: payload.configuration[k], type: typeof payload.configuration[k] === 'number' ? 'number' : 'boolean' }) });
-            this.showAlert('Core Manifest Synchronized');
+            for (let k in payload.branding) {
+                await this.putSetting(k, payload.branding[k]);
+            }
+            for (let k in payload.configuration) {
+                await fetch('api/admin/settings.php', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: k, value: payload.configuration[k], type: typeof payload.configuration[k] === 'number' ? 'number' : 'boolean' })
+                });
+            }
+            this.showAlert('Hotel profile saved and synced to platform admin');
             setTimeout(() => location.reload(), 1000);
         } catch (err) { this.showAlert(err.message, 'error'); }
     }
@@ -818,7 +713,6 @@ document.getElementById('vatRateInput').addEventListener('input', (e) => {
 });
 
 // Init
-AdminSettings.setupLogoDropZone();
 AdminSettings.switchTab('branding');
 lucide.createIcons();
 </script>

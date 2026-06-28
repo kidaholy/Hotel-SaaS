@@ -72,39 +72,15 @@ function renderHeader($title = "Management System", $options = []) {
         <!-- Tailwind CSS CDN -->
         <script src="https://cdn.tailwindcss.com"></script>
         <!-- Google Fonts: Inter -->
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
         <!-- Lucide Icons -->
         <script src="https://unpkg.com/lucide@latest"></script>
         <!-- Chart.js -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="public/css/theme.css">
         <style>
-            :root {
-                --background: 144 8% 6%; /* #0f1110 */
-                --foreground: 40 10% 90%;
-                --muted: 150 5% 11%;
-                --muted-foreground: 40 5% 60%;
-                --accent: 40 45% 56%; /* #c5a059 - Elegance Gold */
-                --accent-foreground: 40 10% 10%;
-                --popover: 144 8% 4%;
-                --popover-foreground: 40 10% 90%;
-                --border: 150 5% 15%;
-                --input: 150 5% 15%;
-                --card: 150 6% 9%; /* #151817 - Obsidian Glass */
-                --card-foreground: 40 10% 90%;
-                --primary: 40 45% 56%;
-                --primary-foreground: 40 10% 10%;
-                --secondary: 150 5% 11%; /* #1a1d1c - Matte Graphite */
-                --secondary-foreground: 40 10% 90%;
-                --destructive: 0 63% 31%;
-                --destructive-foreground: 210 40% 98%;
-                --ring: 40 45% 56%;
-                --radius: 1.25rem;
-            }
-
             body {
                 font-family: 'Inter', sans-serif;
-                background-color: #0f1110;
-                color: hsl(var(--foreground));
                 -webkit-font-smoothing: antialiased;
             }
 
@@ -119,9 +95,10 @@ function renderHeader($title = "Management System", $options = []) {
 
             /* Standard Glass Components */
             .glass {
-                background: rgba(255, 255, 255, 0.03);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: var(--app-surface, #fff);
+                backdrop-filter: blur(8px);
+                border: 1px solid var(--border, #e2ebe6);
+                box-shadow: var(--shadow, 0 4px 24px rgba(26,46,40,0.08));
             }
 
             .sidebar-link {
@@ -131,30 +108,30 @@ function renderHeader($title = "Management System", $options = []) {
                 padding: 0.875rem 1.25rem;
                 border-radius: var(--radius);
                 transition: all 0.2s ease;
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 0.875rem;
-                font-weight: 500;
+                color: var(--muted, #3d5249);
+                font-size: 0.9375rem;
+                font-weight: 600;
             }
 
             .sidebar-link:hover {
-                background-color: rgba(197, 160, 89, 0.05);
-                color: #c5a059;
+                background-color: var(--green-soft, #f0faf5);
+                color: var(--green, #1d6b4a);
             }
 
             .sidebar-link.active {
-                background-color: rgba(197, 160, 89, 0.1);
-                color: #c5a059;
-                font-weight: 600;
+                background-color: var(--green-light, #e8f5ef);
+                color: var(--green, #1d6b4a);
+                font-weight: 700;
             }
 
             /* Custom Standard Scrollbar */
             ::-webkit-scrollbar { width: 6px; }
             ::-webkit-scrollbar-track { background: transparent; }
             ::-webkit-scrollbar-thumb { 
-                background: rgba(255, 255, 255, 0.2); 
+                background: rgba(29, 107, 74, 0.25); 
                 border-radius: 9999px; 
             }
-            ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+            ::-webkit-scrollbar-thumb:hover { background: rgba(29, 107, 74, 0.4); }
 
             /* Mobile Menu State */
             #mobile-menu.active {
@@ -197,25 +174,25 @@ function renderHeader($title = "Management System", $options = []) {
             }
         </script>
     </head>
-    <body class="min-h-screen flex flex-col selection:bg-primary/10 selection:text-primary">
+    <body class="theme-light min-h-screen flex flex-col selection:bg-primary/10 selection:text-primary">
         
         <?php if ($user && $navMode !== 'kiosk'): ?>
         <!-- Top Navigation Bar -->
-        <nav class="h-[60px] bg-[#111413] border-b border-white/5 flex items-center justify-between px-6 shrink-0 z-50 sticky top-0">
+        <nav class="h-[60px] bg-white border-b border-[#e2ebe6] flex items-center justify-between px-6 shrink-0 z-50 sticky top-0 shadow-sm">
             <!-- Logo & Brand -->
             <a href="admin.php" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
                 <?php if ($logoUrl): ?>
-                    <div class="w-10 h-10 rounded-full overflow-hidden bg-white/10 border border-white/20 flex-shrink-0">
+                    <div class="w-10 h-10 rounded-xl overflow-hidden bg-[#e8f5ef] border border-[#e2ebe6] flex-shrink-0">
                         <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="Logo" class="w-full h-full object-cover">
                     </div>
                 <?php else: ?>
-                    <div class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex flex-col items-center justify-center flex-shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-[#1d6b4a] flex flex-col items-center justify-center flex-shrink-0">
                         <span class="text-[10px] font-bold tracking-widest text-white leading-none"><?php echo htmlspecialchars(strtoupper(substr($appName, 0, 3))); ?></span>
                     </div>
                 <?php endif; ?>
                 <div>
-                    <h1 class="text-white font-bold text-lg leading-none tracking-tight mt-0.5"><?php echo htmlspecialchars($appName); ?></h1>
-                    <p class="text-[9px] text-white/50 font-medium uppercase tracking-wider leading-none mt-1"><?php echo htmlspecialchars($appTagline); ?></p>
+                    <h1 class="text-[#0f1f1a] font-extrabold text-xl leading-none tracking-tight mt-0.5"><?php echo htmlspecialchars($appName); ?></h1>
+                    <p class="text-xs text-[#3d5249] font-bold uppercase tracking-wider leading-none mt-1"><?php echo htmlspecialchars($appTagline); ?></p>
                 </div>
             </a>
 
@@ -234,32 +211,32 @@ function renderHeader($title = "Management System", $options = []) {
 
             <!-- Right Side -->
             <div class="flex items-center gap-2 md:gap-4">
-                <span class="hidden lg:block text-sm font-medium text-white/80">
+                <span class="hidden lg:block text-base font-semibold text-[#3d5249]">
                     Hi, <?php echo htmlspecialchars($user['name'] ?? 'User'); ?>!
                 </span>
-                <a href="logout.php" class="px-3 py-1.5 md:px-4 md:py-2 bg-white/10 hover:bg-red-500/80 hover:text-white text-white text-sm font-medium rounded-lg transition-colors border border-white/10">
+                <a href="logout.php" class="px-3 py-1.5 md:px-4 md:py-2 bg-[#f0faf5] hover:bg-red-500 hover:text-white text-[#1d6b4a] text-base font-semibold rounded-lg transition-colors border border-[#e2ebe6]">
                     Logout
                 </a>
                 
                 <!-- Mobile Menu Toggle -->
-                <button id="mobile-menu-toggle" class="md:hidden p-2 text-white/70 hover:text-white transition-colors">
+                <button id="mobile-menu-toggle" class="md:hidden p-2 text-[#5c6f68] hover:text-[#1d6b4a] transition-colors">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
         </nav>
 
         <!-- Mobile Navigation Drawer -->
-        <div id="mobile-menu" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl translate-x-full transition-transform duration-300 md:hidden">
+        <div id="mobile-menu" class="fixed inset-0 z-[100] bg-white/98 backdrop-blur-xl translate-x-full transition-transform duration-300 md:hidden">
             <div class="flex flex-col h-full">
                 <!-- Mobile Header -->
-                <div class="h-[60px] px-6 flex items-center justify-between border-b border-white/10 bg-[#111413]">
+                <div class="h-[60px] px-6 flex items-center justify-between border-b border-[#e2ebe6] bg-white">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-lg bg-[#1d6b4a] flex items-center justify-center">
                             <span class="text-[8px] font-bold text-white"><?php echo htmlspecialchars(strtoupper(substr($appName, 0, 3))); ?></span>
                         </div>
-                        <span class="text-white font-bold">Menu</span>
+                        <span class="text-[#0f1f1a] font-extrabold text-lg">Menu</span>
                     </div>
-                    <button id="mobile-menu-close" class="p-2 text-white/70 hover:text-white transition-colors">
+                    <button id="mobile-menu-close" class="p-2 text-[#5c6f68] hover:text-[#1d6b4a] transition-colors">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
@@ -267,7 +244,7 @@ function renderHeader($title = "Management System", $options = []) {
                 <!-- Mobile Body -->
                 <div class="flex-1 overflow-y-auto p-6 space-y-8">
                     <div class="space-y-4">
-                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#c5a059]/40 border-b border-[#c5a059]/10 pb-2">Main Navigation</p>
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#1d6b4a]/60 border-b border-[#e2ebe6] pb-2">Main Navigation</p>
                         <div class="flex flex-col gap-1">
                             <?php 
                             if ($navMode === 'pos') {
@@ -284,14 +261,14 @@ function renderHeader($title = "Management System", $options = []) {
                 </div>
 
                 <!-- Mobile Footer -->
-                <div class="p-6 border-t border-white/10 bg-[#111413]/50">
+                <div class="p-6 border-t border-[#e2ebe6] bg-[#f7faf8]">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-[#c5a059]/20 flex items-center justify-center text-[#c5a059]">
+                        <div class="w-10 h-10 rounded-full bg-[#e8f5ef] flex items-center justify-center text-[#1d6b4a]">
                             <i data-lucide="user" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-white"><?php echo htmlspecialchars($user['name'] ?? 'User'); ?></p>
-                            <p class="text-[10px] text-white/40 uppercase tracking-wider"><?php echo htmlspecialchars($user['role'] ?? ''); ?></p>
+                            <p class="text-sm font-bold text-[#0f1f1a]"><?php echo htmlspecialchars($user['name'] ?? 'User'); ?></p>
+                            <p class="text-xs text-[#3d5249] font-bold uppercase tracking-wider"><?php echo htmlspecialchars($user['role'] ?? ''); ?></p>
                         </div>
                     </div>
                 </div>
@@ -300,15 +277,20 @@ function renderHeader($title = "Management System", $options = []) {
         <?php endif; ?>
 
         <!-- Main Content -->
-        <main class="flex-1 flex bg-[#0f1110] relative min-h-0">
+        <main class="flex-1 flex bg-[#f7faf8] relative min-h-0">
             <div class="flex-1 flex relative page-enter min-h-0 w-full">
     <?php
 }
 
 function renderFooter() {
+    $user = getCurrentUser();
     ?>
             </div>
         </main>
+
+        <?php if ($user && empty($_SESSION['is_platform_super_admin'])): ?>
+        <script src="public/js/cloud-import.js"></script>
+        <?php endif; ?>
 
         <script>
             lucide.createIcons();
@@ -360,7 +342,6 @@ function getAdminNavLinks($role) {
         ['name' => 'Stock',        'icon' => 'package-2',        'url' => 'stock.php',        'roles' => ['admin'], 'perm' => 'stock:view'],
         ['name' => 'Reports',      'icon' => 'bar-chart-3',      'url' => 'reports.php',      'roles' => ['admin'], 'perm' => 'reports:view'],
         ['name' => 'Services',     'icon' => 'key-round',       'url' => 'services.php',     'roles' => ['admin', 'reception', 'receptionist'], 'perm' => 'services:view'],
-        ['name' => 'Website CMS',  'icon' => 'globe-2',          'url' => 'website_cms.php',  'roles' => ['admin'], 'perm' => 'settings:update'],
         ['name' => 'Settings',     'icon' => 'settings-2',       'url' => 'settings.php',     'roles' => ['admin'], 'perm' => 'settings:view'],
     ];
 
@@ -402,8 +383,8 @@ function renderTopNavLinks($role) {
     foreach ($links as $link) {
         $active = ($currentUrl === $link['url']);
         $cls = $active
-            ? 'px-4 py-2 text-sm font-semibold text-[#c5a059] bg-[#c5a059]/10 rounded-md transition-colors'
-            : 'px-4 py-2 text-sm font-medium text-white/60 hover:text-[#c5a059] hover:bg-[#c5a059]/5 rounded-md transition-colors';
+            ? 'px-4 py-2 text-base font-bold text-[#1d6b4a] bg-[#e8f5ef] rounded-md transition-colors'
+            : 'px-4 py-2 text-base font-semibold text-[#3d5249] hover:text-[#1d6b4a] hover:bg-[#f0faf5] rounded-md transition-colors';
         echo "<a href='{$link['url']}' class='{$cls}'>{$link['name']}</a>";
     }
 }
@@ -426,8 +407,8 @@ function renderPosNavLinks($activeTab = 'standard') {
     foreach ($tabs as $tab) {
         $on = ($activeTab === $tab['key']);
         $cls = $on
-            ? 'px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#c5a059] bg-[#c5a059]/10 rounded-md'
-            : 'px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white/50 hover:text-[#c5a059] hover:bg-[#c5a059]/5 rounded-md transition-colors';
+            ? 'px-3 py-2 text-xs font-extrabold uppercase tracking-wider text-[#1d6b4a] bg-[#e8f5ef] rounded-md'
+            : 'px-3 py-2 text-xs font-extrabold uppercase tracking-wider text-[#3d5249] hover:text-[#1d6b4a] hover:bg-[#f0faf5] rounded-md transition-colors';
         echo "<a href='{$tab['url']}' class='{$cls}'>{$tab['label']}</a>";
     }
 }

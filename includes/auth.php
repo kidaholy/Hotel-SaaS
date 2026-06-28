@@ -5,6 +5,7 @@
 
 require_once 'config.php';
 require_once 'JsonDB.php';
+require_once 'TenantManager.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start([
@@ -13,6 +14,9 @@ if (session_status() === PHP_SESSION_NONE) {
         'use_strict_mode' => true,
     ]);
 }
+
+TenantManager::bootstrap();
+TenantManager::applySessionTenant();
 
 /**
  * Super Admin Protection Constants
@@ -33,6 +37,11 @@ function isAuthenticated() {
 function requireAuth($roles = [], $requiredPermission = null) {
     if (!isAuthenticated()) {
         header('Location: /login.php');
+        exit;
+    }
+
+    if (!empty($_SESSION['is_platform_super_admin'])) {
+        header('Location: /platform-admin.php');
         exit;
     }
 
@@ -93,6 +102,12 @@ function requireApiAuth($roles = [], $requiredPermission = null) {
         exit;
     }
 
+    if (!empty($_SESSION['is_platform_super_admin'])) {
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Platform admin cannot access tenant APIs']);
+        exit;
+    }
+
     if (!empty($roles) || $requiredPermission !== null) {
         $userRole = $_SESSION['role'] ?? '';
         $userPermissions = $_SESSION['permissions'] ?? [];
@@ -139,35 +154,63 @@ function requireApiAuth($roles = [], $requiredPermission = null) {
 }
 
 /**
- * Attempt to log in a user
+ * Attempt to log in a tenant user (hotel + username + password)
  */
-function login($email, $password) {
+function login($hotelName, $username, $password) {
     try {
-        $user = db('users')->findUnique([
-            'where' => ['email' => $email]
-        ]);
-
-        if ($user && password_verify($password, $user['password'])) {
-            if (isset($user['isActive']) && $user['isActive'] === false) {
-                return ['success' => false, 'message' => 'Account deactivated'];
-            }
-
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['name'] = $user['name'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['permissions'] = is_array($user['permissions'] ?? []) 
-                ? ($user['permissions'] ?? []) 
-                : (json_decode($user['permissions'] ?? '[]', true) ?: []);
-            $_SESSION['floorId'] = $user['floorId'] ?? null;
-            
-            return ['success' => true, 'user' => $user];
+        $result = TenantManager::loginWithCredentials($hotelName, $username, $password);
+        if (!$result['success']) {
+            return $result;
         }
+
+        TenantManager::setSessionTenant($result['tenant'], $result['user']);
+        return ['success' => true, 'user' => $result['user']];
     } catch (Exception $e) {
         error_log("Login error: " . $e->getMessage());
     }
 
-    return ['success' => false, 'message' => 'Invalid email or password'];
+    return ['success' => false, 'message' => 'Invalid username or password'];
+}
+
+/**
+ * Attempt to log in the platform super admin (username + password only)
+ */
+function loginSuperAdmin($username, $password) {
+    try {
+        $result = TenantManager::loginSuperAdmin($username, $password);
+        if (!$result['success']) {
+            return $result;
+        }
+
+        TenantManager::setSessionSuperAdmin($result['admin']);
+        return ['success' => true, 'admin' => $result['admin']];
+    } catch (Exception $e) {
+        error_log("Super admin login error: " . $e->getMessage());
+    }
+
+    return ['success' => false, 'message' => 'Invalid username or password'];
+}
+
+/**
+ * Require platform super admin session
+ */
+function requirePlatformSuperAdmin() {
+    if (!isAuthenticated() || empty($_SESSION['is_platform_super_admin'])) {
+        header('Location: /super-admin-login.php');
+        exit;
+    }
+}
+
+/**
+ * Require platform super admin for JSON API endpoints
+ */
+function requirePlatformSuperAdminApi() {
+    header('Content-Type: application/json');
+    if (!isAuthenticated() || empty($_SESSION['is_platform_super_admin'])) {
+        http_response_code(401);
+        echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+        exit;
+    }
 }
 
 /**
@@ -193,10 +236,15 @@ function getCurrentUser() {
     return [
         'id' => $_SESSION['user_id'],
         'name' => $_SESSION['name'],
-        'email' => $_SESSION['email'],
+        'username' => $_SESSION['username'] ?? '',
+        'email' => $_SESSION['email'] ?? '',
         'role' => $_SESSION['role'],
         'permissions' => $_SESSION['permissions'] ?? [],
-        'floorId' => $_SESSION['floorId'] ?? null
+        'floorId' => $_SESSION['floorId'] ?? null,
+        'tenant_id' => $_SESSION['tenant_id'] ?? null,
+        'tenant_slug' => $_SESSION['tenant_slug'] ?? null,
+        'tenant_name' => $_SESSION['tenant_name'] ?? null,
+        'is_platform_super_admin' => !empty($_SESSION['is_platform_super_admin']),
     ];
 }
 
@@ -217,6 +265,9 @@ function hasPermission($permission) {
  * Check if the current user or a specific ID is the protected Super Admin
  */
 function isSuperAdmin($userId = null) {
+    if (!empty($_SESSION['is_platform_super_admin'])) {
+        return true;
+    }
     if ($userId === null) {
         if (!isAuthenticated()) return false;
         $userId = $_SESSION['user_id'];
@@ -236,4 +287,53 @@ function hasPermissionPattern($pattern) {
         $permissions = is_string($permissions) ? (json_decode($permissions, true) ?: []) : [];
     }
     return !empty(preg_grep($pattern, $permissions));
+}
+
+/**
+ * Redirect target after login based on user role
+ */
+function routeUserBasedOnRole($role) {
+    if (!empty($_SESSION['is_platform_super_admin']) || $role === 'platform_super_admin') {
+        return 'platform-admin.php';
+    }
+
+    switch ($role) {
+        case 'admin':
+            return 'admin.php';
+        case 'cashier':
+            return 'cashier.php';
+        case 'chef':
+            return 'chef.php';
+        case 'bar':
+            return 'bar.php';
+        case 'store_keeper':
+        case 'store':
+            return 'store.php';
+        case 'receptionist':
+        case 'reception':
+            return 'reception.php';
+        case 'display':
+            return 'display.php';
+        case 'custom':
+            $user = getCurrentUser();
+            $perms = $user['permissions'] ?? [];
+
+            if (in_array('cashier:access', $perms)) return 'cashier.php';
+            if (in_array('chef:access', $perms)) return 'chef.php';
+            if (in_array('bar:access', $perms)) return 'bar.php';
+            if (in_array('reception:access', $perms)) return 'reception.php';
+            if (in_array('display:access', $perms)) return 'display.php';
+            if (in_array('overview:view', $perms)) return 'admin.php';
+            if (hasPermissionPattern('/^orders:/')) return 'orders.php';
+            if (hasPermissionPattern('/^reports:/')) return 'reports.php';
+            if (hasPermissionPattern('/^stock:/')) return 'stock.php';
+            if (hasPermissionPattern('/^store:/')) return 'store.php';
+            if (hasPermissionPattern('/^users:/')) return 'staff.php';
+            if (hasPermissionPattern('/^services:/')) return 'services.php';
+            if (hasPermissionPattern('/^settings:/')) return 'settings.php';
+
+            return 'index.php';
+        default:
+            return 'index.php';
+    }
 }

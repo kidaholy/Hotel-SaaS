@@ -8,8 +8,8 @@ require_once __DIR__ . '/SqliteDB.php';
 class JsonDB {
     private $adapter;
 
-    public function __construct($table) {
-        $this->adapter = new SqliteDB($table);
+    public function __construct($table, $dbPath = null) {
+        $this->adapter = new SqliteDB($table, $dbPath);
     }
 
     public function findMany($args = []) {
@@ -58,12 +58,27 @@ class JsonDB {
 }
 
 /**
- * Convenience function to get a table instance
+ * Convenience function to get a table instance (tenant-scoped database)
  */
 function db($table) {
     static $instances = [];
-    if (!isset($instances[$table])) {
-        $instances[$table] = new JsonDB($table);
+    $path = SqliteDB::getActivePath();
+    $key = $path . '::' . $table;
+    if (!isset($instances[$key])) {
+        $instances[$key] = new JsonDB($table);
     }
-    return $instances[$table];
+    return $instances[$key];
+}
+
+/**
+ * Platform registry database (tenants, accounts)
+ */
+function platformDb($table) {
+    static $instances = [];
+    $path = PLATFORM_DB_PATH;
+    $key = $path . '::' . $table;
+    if (!isset($instances[$key])) {
+        $instances[$key] = new JsonDB($table, $path);
+    }
+    return $instances[$key];
 }

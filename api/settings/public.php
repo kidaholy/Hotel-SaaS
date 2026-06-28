@@ -7,16 +7,16 @@ require_once '../../includes/SettingsManager.php';
  */
 try {
     $manager = new SettingsManager();
-    $branding = $manager->getBranding();
+    $branding = $manager->getBrandingVars();
     $config = $manager->getSetting('configuration') ?? [];
 
     echo json_encode([
         'status' => 'success',
         'data' => [
-            'logo_url' => $branding['logo_url'] ?? '',
-            'favicon_url' => $branding['favicon_url'] ?? ($branding['logo_url'] ?? ''),
-            'app_name' => $branding['app_name'] ?? 'ABE HOTEL',
-            'app_tagline' => $branding['app_tagline'] ?? 'HOTEL MANAGEMENT SYSTEM',
+            'logo_url' => $branding['publicLogoUrl'] ?? '',
+            'favicon_url' => $branding['faviconUrl'] ?? '',
+            'app_name' => $branding['appName'] ?? 'ABE HOTEL',
+            'app_tagline' => $branding['appTagline'] ?? 'HOTEL MANAGEMENT SYSTEM',
             'vat_rate' => (string)($config['vat_rate'] ?? '0.15'),
             'enable_cashier_printing' => ($config['enable_cashier_printing'] ?? true) ? 'true' : 'false',
             'enable_cashier_today_revenue' => ($config['enable_cashier_today_revenue'] ?? false) ? 'true' : 'false',

@@ -7,36 +7,67 @@
 class SqliteDB {
     private $table;
     private $dbPath;
-    private static $pdo = null;
+    private static $activePath = null;
+    private static $pdoPool = [];
 
-    public function __construct($table) {
+    public function __construct($table, $dbPath = null) {
         $this->table = $table;
-        $this->dbPath = DATA_DIR . '/database.sqlite';
-        
+        $this->dbPath = $dbPath ?? self::getActivePath();
+
         $this->initPDO();
         $this->initTable();
     }
 
-    private function initPDO() {
-        if (self::$pdo === null) {
+    public static function getDefaultPath() {
+        return DATA_DIR . '/database.sqlite';
+    }
+
+    public static function getActivePath() {
+        return self::$activePath ?? self::getDefaultPath();
+    }
+
+    public static function setActivePath($path) {
+        self::$activePath = $path;
+    }
+
+    public static function resetActivePath() {
+        self::$activePath = null;
+    }
+
+    private static function getPdo($path) {
+        if (!isset(self::$pdoPool[$path])) {
             try {
-                self::$pdo = new PDO("sqlite:" . $this->dbPath);
-                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-                // Basic performance tuning for SQLite
-                self::$pdo->exec("PRAGMA journal_mode = WAL;");
-                self::$pdo->exec("PRAGMA synchronous = NORMAL;");
+                $dir = dirname($path);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                $pdo = new PDO("sqlite:" . $path);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+                $pdo->exec("PRAGMA journal_mode = WAL;");
+                $pdo->exec("PRAGMA synchronous = NORMAL;");
+                self::$pdoPool[$path] = $pdo;
             } catch (PDOException $e) {
                 die("CRITICAL ERROR: Could not connect to SQLite database: " . $e->getMessage());
             }
         }
+        return self::$pdoPool[$path];
+    }
+
+    private function initPDO() {
+        self::getPdo($this->dbPath);
+    }
+
+    private function pdo() {
+        return self::getPdo($this->dbPath);
     }
 
     private function initTable() {
-        $stmt = self::$pdo->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=:table");
+        $pdo = $this->pdo();
+        $stmt = $pdo->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=:table");
         $stmt->execute(['table' => $this->table]);
         if (!$stmt->fetch()) {
-            self::$pdo->exec("CREATE TABLE IF NOT EXISTS `{$this->table}` (
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `{$this->table}` (
                 id TEXT PRIMARY KEY,
                 data TEXT
             )");
@@ -193,7 +224,7 @@ class SqliteDB {
             $sql .= " LIMIT " . (int)$args['take'];
         }
 
-        $stmt = self::$pdo->prepare($sql);
+        $stmt = $this->pdo()->prepare($sql);
         $stmt->execute($params);
         $results = $stmt->fetchAll();
         
@@ -206,7 +237,7 @@ class SqliteDB {
         if (isset($args['where'])) {
             $sql .= " WHERE " . $this->buildWhere($args['where'], $params);
         }
-        $stmt = self::$pdo->prepare($sql);
+        $stmt = $this->pdo()->prepare($sql);
         $stmt->execute($params);
         return (int)$stmt->fetchColumn();
     }
@@ -235,7 +266,7 @@ class SqliteDB {
 
         $encoded = $this->encode($data);
         
-        $stmt = self::$pdo->prepare("INSERT INTO `{$this->table}` (id, data) VALUES (:id, :data)");
+        $stmt = $this->pdo()->prepare("INSERT INTO `{$this->table}` (id, data) VALUES (:id, :data)");
         $stmt->execute($encoded);
         
         return $data;
@@ -250,7 +281,7 @@ class SqliteDB {
         
         $encoded = $this->encode($updatedData);
         
-        $stmt = self::$pdo->prepare("UPDATE `{$this->table}` SET data = :data WHERE id = :id");
+        $stmt = $this->pdo()->prepare("UPDATE `{$this->table}` SET data = :data WHERE id = :id");
         $stmt->execute($encoded);
         
         return $updatedData;
@@ -273,7 +304,7 @@ class SqliteDB {
         $item = $this->findUnique(['where' => $args['where']]);
         if (!$item) throw new Exception("Record not found for delete in {$this->table}");
 
-        $stmt = self::$pdo->prepare("DELETE FROM `{$this->table}` WHERE id = :id");
+        $stmt = $this->pdo()->prepare("DELETE FROM `{$this->table}` WHERE id = :id");
         $stmt->execute(['id' => $item['id']]);
         
         return $item;
@@ -287,24 +318,27 @@ class SqliteDB {
         // So we'll do it in two steps for safety or use a subquery
         $sql = "DELETE FROM `{$this->table}` WHERE id IN (SELECT id FROM `{$this->table}` WHERE {$where})";
         
-        $stmt = self::$pdo->prepare($sql);
+        $stmt = $this->pdo()->prepare($sql);
         $stmt->execute($params);
         return $stmt->rowCount();
     }
 
     public function truncate() {
-        return self::$pdo->exec("DELETE FROM `{$this->table}`");
+        return $this->pdo()->exec("DELETE FROM `{$this->table}`");
     }
 
-    public static function beginTransaction() {
-        self::$pdo->beginTransaction();
+    public static function beginTransaction($path = null) {
+        $path = $path ?? self::getActivePath();
+        self::getPdo($path)->beginTransaction();
     }
 
-    public static function commit() {
-        self::$pdo->commit();
+    public static function commit($path = null) {
+        $path = $path ?? self::getActivePath();
+        self::getPdo($path)->commit();
     }
 
-    public static function rollBack() {
-        self::$pdo->rollBack();
+    public static function rollBack($path = null) {
+        $path = $path ?? self::getActivePath();
+        self::getPdo($path)->rollBack();
     }
 }

@@ -25,8 +25,6 @@ try {
         $config = $manager->getSetting('configuration') ?? [];
         
         $response = [
-            'logo_url' => $branding['logo_url'] ?? '',
-            'favicon_url' => $branding['favicon_url'] ?? ($branding['logo_url'] ?? ''),
             'app_name' => $branding['app_name'] ?? 'ABE HOTEL',
             'app_tagline' => $branding['app_tagline'] ?? 'HOTEL MANAGEMENT SYSTEM',
             'vat_rate' => $config['vat_rate'] ?? 0.08,
@@ -49,9 +47,16 @@ try {
             exit;
         }
 
-        // Determine section (branding or configuration)
-        $brandingKeys = ['logo_url', 'favicon_url', 'app_name', 'app_tagline'];
-        $section = in_array($key, $brandingKeys) ? 'branding' : 'configuration';
+        $brandingKeys = ['app_name', 'app_tagline'];
+        $protectedBrandingKeys = ['logo_url', 'favicon_url'];
+
+        if (in_array($key, $protectedBrandingKeys, true)) {
+            http_response_code(403);
+            echo json_encode(['message' => 'Logo and favicon are managed by the platform administrator']);
+            exit;
+        }
+
+        $section = in_array($key, $brandingKeys, true) ? 'branding' : 'configuration';
 
         // Type conversion
         if ($type === 'boolean') {
@@ -74,34 +79,10 @@ try {
         echo json_encode($response);
     }
     
-    // POST: Upload image
+    // POST: Upload image (disabled for tenants — platform admin only)
     else if ($method === 'POST' && isset($_FILES['file'])) {
-        $type = $_GET['type'] ?? 'logo';
-        
-        try {
-            if ($type === 'logo') {
-                $uploaded = $manager->uploadLogoAndFavicon($_FILES['file']);
-                echo json_encode([
-                    'success' => true,
-                    'url' => $uploaded['logo_url'],
-                    'favicon_url' => $uploaded['favicon_url'],
-                    'type' => $type
-                ]);
-            } else {
-                $base64 = $manager->uploadImage($_FILES['file'], 'favicon');
-                $manager->updateSetting('branding', 'favicon_url', $base64);
-                echo json_encode([
-                    'success' => true,
-                    'url' => $base64,
-                    'favicon_url' => $base64,
-                    'type' => $type
-                ]);
-            }
-            exit;
-        } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['message' => $e->getMessage()]);
-        }
+        http_response_code(403);
+        echo json_encode(['message' => 'Logo and favicon are managed by the platform administrator']);
     }
     
     else {

@@ -116,6 +116,49 @@ function renderTab() {
     };
     el.innerHTML = (map[S.activeTab] || renderInventory)();
     lucide.createIcons();
+    initStoreCloudButtons();
+}
+
+async function initStoreCloudButtons() {
+    if (!window.CloudImportUI) return;
+
+    try {
+        const status = await CloudImportUI.getStatus();
+        if (!status.available) return;
+
+        const invBtn = document.getElementById('store-cloud-import-btn');
+        if (invBtn && S.activeTab === 'inventory') {
+            invBtn.classList.remove('hidden');
+            invBtn.classList.add('flex');
+            invBtn.querySelector('span').textContent = CloudImportUI.buttonLabel(status.platform_name);
+            invBtn.onclick = async () => {
+                try {
+                    await CloudImportUI.run('stocks', { onSuccess: () => fetchAll() });
+                } catch (err) {
+                    alert(err.message || 'Import failed');
+                }
+            };
+        }
+
+        const catBtn = document.getElementById('store-cat-cloud-import-btn');
+        if (catBtn && S.activeTab === 'categories' && S.catActiveSubtab === 'stock') {
+            catBtn.classList.remove('hidden');
+            catBtn.classList.add('flex');
+            catBtn.querySelector('span').textContent = CloudImportUI.buttonLabel(status.platform_name);
+            catBtn.onclick = async () => {
+                try {
+                    await CloudImportUI.run('categories', {
+                        type: 'stock',
+                        onSuccess: () => fetchAll(),
+                    });
+                } catch (err) {
+                    alert(err.message || 'Import failed');
+                }
+            };
+        }
+    } catch (err) {
+        // Hide buttons if cloud import unavailable
+    }
 }
 
 // Category tab helper (shared logic)
@@ -205,9 +248,16 @@ function renderInventory() {
           </h3>
         </div>
         
+        <div class="flex flex-wrap items-center gap-2">
+        <button type="button" id="store-cloud-import-btn" class="hidden items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors w-fit"
+            style="background:#f0faf5;border-color:#c5d5cc;color:#1d6b4a">
+          <i data-lucide="cloud-download" class="w-3.5 h-3.5"></i>
+          <span>Import data from Cloud</span>
+        </button>
         <button onclick="exportCSV('inventory')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-400 hover:text-white transition-colors w-fit">
           <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
         </button>
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left">
@@ -307,11 +357,18 @@ function renderCategories() {
         </button>`).join('')}
       </div>
       ${S.isAdmin ? `
-      <form onsubmit="addCategory(event)" class="flex gap-3">
-        <input type="text" name="catName" placeholder="New ${S.catActiveSubtab} category..." required
-          class="flex-1 bg-white/5 border border-white/5 rounded-2xl px-5 py-3 text-sm font-bold text-white focus:border-[#d4af37]/30 outline-none">
-        <button type="submit" class="px-6 py-3 rounded-2xl bg-[#d4af37] text-black font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all">Add</button>
-      </form>` : ''}
+      <div class="flex flex-col sm:flex-row gap-3">
+        <form onsubmit="addCategory(event)" class="flex flex-1 gap-3">
+          <input type="text" name="catName" placeholder="New ${S.catActiveSubtab} category..." required
+            class="flex-1 bg-white/5 border border-white/5 rounded-2xl px-5 py-3 text-sm font-bold text-white focus:border-[#d4af37]/30 outline-none">
+          <button type="submit" class="px-6 py-3 rounded-2xl bg-[#d4af37] text-black font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all">Add</button>
+        </form>
+        <button type="button" id="store-cat-cloud-import-btn" class="hidden items-center justify-center gap-2 px-4 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all"
+          style="background:#f0faf5;border-color:#c5d5cc;color:#1d6b4a">
+          <i data-lucide="cloud-download" class="w-3.5 h-3.5"></i>
+          <span>Import data from Cloud</span>
+        </button>
+      </div>` : ''}
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
         ${cats.map(c => `
         <div class="glass p-5 rounded-[1.5rem] border border-white/5 group">

@@ -14,32 +14,25 @@ renderHeader('Access Denied');
 ?>
 
 <div class="min-h-[80vh] flex items-center justify-center p-4">
-    <div class="glass max-w-md w-full p-10 rounded-3xl border border-red-500/20 bg-red-500/5 text-center space-y-8 animate-in fade-in zoom-in duration-500">
-        <!-- Error Icon -->
-        <div class="mx-auto w-24 h-24 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shadow-[0_0_50px_-12px_rgba(239,68,68,0.3)]">
+    <div class="glass max-w-md w-full p-10 rounded-3xl border border-red-200 bg-red-50 text-center space-y-8">
+        <div class="mx-auto w-24 h-24 rounded-full bg-red-100 border border-red-200 flex items-center justify-center text-red-500">
             <i data-lucide="shield-alert" class="w-12 h-12"></i>
         </div>
-
-        <!-- Message -->
         <div class="space-y-3">
-            <h1 class="text-4xl font-black text-white tracking-tighter uppercase italic">Access Denied</h1>
-            <p class="text-red-400 font-bold uppercase tracking-widest text-xs">Sorry, you are not permitted to view this page</p>
-            <p class="text-gray-500 text-sm leading-relaxed max-w-[280px] mx-auto">Your account privileges do not allow access to the requested resource. Please contact your administrator if you believe this is an error.</p>
+            <h1 class="text-3xl font-black tracking-tight" style="color:#1a2e28">Access Denied</h1>
+            <p class="text-red-600 font-semibold text-sm">Sorry, you are not permitted to view this page</p>
+            <p class="text-sm leading-relaxed max-w-[280px] mx-auto" style="color:#5c6f68">Your account privileges do not allow access to the requested resource.</p>
         </div>
-
-        <!-- Actions -->
         <div class="pt-4 flex flex-col gap-3">
-            <a href="index.php" class="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                <i data-lucide="home" class="w-4 h-4"></i> Return to Dashboard
+            <a href="index.php" class="w-full py-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2" style="border-color:#e2ebe6;color:#1d6b4a">
+                <i data-lucide="home" class="w-4 h-4"></i> Return Home
             </a>
-            <button onclick="history.back()" class="w-full py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-xs transition-all shadow-lg flex items-center justify-center gap-2">
+            <button onclick="history.back()" class="w-full py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold flex items-center justify-center gap-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Go Back
             </button>
         </div>
-
-        <!-- Help Link -->
-        <p class="text-[10px] text-gray-600 font-bold uppercase tracking-wider">
-            Logged in as <span class="text-gray-400"><?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></span>
+        <p class="text-xs" style="color:#7a8f85">
+            Logged in as <span style="color:#1a2e28;font-weight:600"><?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></span>
         </p>
     </div>
 </div>

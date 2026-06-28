@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/JsonDB.php';
+require_once __DIR__ . '/TenantManager.php';
 
 class SettingsManager {
     private static $brandingKeys = ['logo_url', 'favicon_url', 'app_name', 'app_tagline'];
@@ -54,17 +55,23 @@ class SettingsManager {
 
     public function getBrandingVars() {
         $b = $this->getBranding();
-        $logo = $b['logo_url'] ?? '';
-        
-        $apiLogo = !empty($logo) ? 'api/branding-image.php?type=logo' : '';
-        $apiFav  = !empty($b['favicon_url']) ? 'api/branding-image.php?type=favicon' : $apiLogo;
+        $platform = TenantManager::getPlatformBrandingVars();
 
         return [
             'appName' => !empty($b['app_name']) ? $b['app_name'] : 'ABE HOTEL',
             'appTagline' => !empty($b['app_tagline']) ? $b['app_tagline'] : 'HOTEL MANAGEMENT SYSTEM',
-            'logoUrl' => $logo,
-            'publicLogoUrl' => $apiLogo,
-            'faviconUrl' => $apiFav,
+            'logoUrl' => $platform['logoUrl'],
+            'publicLogoUrl' => $platform['publicLogoUrl'],
+            'faviconUrl' => $platform['faviconUrl'],
+        ];
+    }
+
+    public function getTenantBrandingVars() {
+        $b = $this->getBranding();
+
+        return [
+            'appName' => !empty($b['app_name']) ? $b['app_name'] : 'ABE HOTEL',
+            'appTagline' => !empty($b['app_tagline']) ? $b['app_tagline'] : 'HOTEL MANAGEMENT SYSTEM',
         ];
     }
 
@@ -79,6 +86,10 @@ class SettingsManager {
             'where' => ['id' => $id],
             'data' => $item
         ]);
+
+        if ($section === 'branding' && $key === 'app_name' && !empty($_SESSION['tenant_id'])) {
+            TenantManager::syncTenantNameToPlatform($_SESSION['tenant_id'], $value);
+        }
 
         return $this->getAllSettings();
     }
