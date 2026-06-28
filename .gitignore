@@ -1,0 +1,22 @@
+# PHP Project Git Ignore
+
+# dependencies
+/vendor/
+
+# data (removed restriction to allow syncing to GitHub)
+# /data/*.json (removed)
+
+# production / temp
+/build/
+/tmp/
+
+# misc
+.DS_Store
+*.pem
+*.log
+.env.local
+
+# vercel/deployment
+.vercel
+.next
+node_modules
