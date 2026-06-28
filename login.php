@@ -93,7 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="auth-footer-links">
                 <p class="auth-muted">New to the platform?</p>
                 <a href="register.php" class="auth-link">Register Your Hotel</a>
-                <a href="super-admin-login.php" class="auth-link" style="opacity:0.7">Platform Super Admin</a>
                 <a href="index.php" class="auth-link" style="opacity:0.5;font-weight:500">← Return to Home</a>
             </div>
         </div>
