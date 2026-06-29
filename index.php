@@ -219,24 +219,6 @@ $heroActions = [
     </div>
 </section>
 
-<!-- FEATURE 2 -->
-<section class="sl-feature-row sl-feature-row-alt">
-    <div class="sl-section-inner sl-feature-split sl-feature-split-reverse">
-        <div class="sl-feature-copy reveal">
-            <span class="sl-eyebrow">Revenue Management</span>
-            <h2>Track performance and grow your revenue</h2>
-            <p>Live financial reports, category sales, cashier reconciliation, and inventory usage — so you always know what is driving profit across restaurant, bar, and rooms.</p>
-            <a href="#pricing" class="sl-link-arrow">Get started <i data-lucide="arrow-right"></i></a>
-        </div>
-        <div class="sl-feature-visual reveal reveal-d1">
-            <div class="sl-mini-card">
-                <p class="sl-mini-title">Revenue Overview</p>
-                <svg viewBox="0 0 200 60" class="sl-chart-line"><polyline points="0,50 25,42 50,45 75,30 100,35 125,20 150,28 175,15 200,22" fill="none" stroke="#1d6b4a" stroke-width="2.5"/></svg>
-                <div class="sl-chart-legend"><span></span> Monthly revenue</div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- PRICING -->
 <section id="pricing" class="sl-pricing">
