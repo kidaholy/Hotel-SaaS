@@ -35,6 +35,10 @@ try {
             throw new Exception('Name and percentage increase are required');
         }
 
+        if (!TenantManager::canAddVipTier()) {
+            throw new Exception(TenantManager::getVipTierLimitMessage());
+        }
+
         $name = trim($input['name']);
         if ($name === '') {
             throw new Exception('Tier name is required');

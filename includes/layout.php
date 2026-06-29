@@ -290,6 +290,34 @@ function renderFooter() {
 
         <?php if ($user && empty($_SESSION['is_platform_super_admin'])): ?>
         <script src="public/js/cloud-import.js"></script>
+        <script>
+        (function () {
+            const redirectForCode = (code) => {
+                const map = {
+                    tenant_deactivated: 'tenant_deactivated',
+                    deactivated: 'deactivated',
+                };
+                window.location.href = '/login.php?error=' + (map[code] || 'deactivated');
+            };
+
+            const checkSession = async () => {
+                try {
+                    const res = await fetch('api/auth/session.php', { credentials: 'same-origin' });
+                    if (res.status === 401) {
+                        const data = await res.json().catch(() => ({}));
+                        redirectForCode(data.code || 'deactivated');
+                    }
+                } catch (e) {
+                    // ignore transient network errors
+                }
+            };
+
+            setInterval(checkSession, 60000);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') checkSession();
+            });
+        })();
+        </script>
         <?php endif; ?>
 
         <script>
@@ -370,7 +398,9 @@ function getAdminNavLinks($role) {
         }
 
         if ($hasRole || $hasPerm) {
-            $filtered[] = $link;
+            if (!empty($_SESSION['is_platform_super_admin']) || PlanFeatures::canAccessNavLink(TenantManager::getCurrentPlan(), $link['url'])) {
+                $filtered[] = $link;
+            }
         }
     }
     return $filtered;

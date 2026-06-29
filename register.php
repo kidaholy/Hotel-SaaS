@@ -12,6 +12,17 @@ if (isAuthenticated()) {
 $error = '';
 $success = '';
 $form = ['hotel_name' => '', 'slug' => '', 'owner_name' => '', 'username' => ''];
+$selectedPlan = $_POST['plan'] ?? $_GET['plan'] ?? null;
+$selectedPlan = $selectedPlan !== null ? strtolower(trim((string) $selectedPlan)) : null;
+$allowedPlans = ['starter', 'pro', 'premium'];
+if ($selectedPlan === null || $selectedPlan === '') {
+    header('Location: index.php#pricing');
+    exit;
+}
+if (!in_array($selectedPlan, $allowedPlans, true)) {
+    header('Location: index.php#pricing');
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $form['hotel_name'] = trim($_POST['hotel_name'] ?? '');
@@ -24,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm) {
         $error = 'Passwords do not match';
     } else {
-        $res = TenantManager::registerTenant($form['hotel_name'], $form['slug'], $form['owner_name'], $form['username'], $password);
+        $res = TenantManager::registerTenant($form['hotel_name'], $form['slug'], $form['owner_name'], $form['username'], $password, '', $selectedPlan);
         if ($res['success']) {
             $loginRes = login($form['hotel_name'], $form['username'], $password);
             if ($loginRes['success']) {
@@ -76,6 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" id="registerForm" style="display:flex;flex-direction:column;gap:1rem">
+                <input type="hidden" name="plan" value="<?php echo htmlspecialchars($selectedPlan); ?>">
+                <div style="background:#f0faf5;border:1px solid #c5d5cc;color:#145239;padding:0.85rem 1rem;border-radius:0.75rem;margin-bottom:0.35rem;font-size:0.85rem;font-weight:600">
+                    Selected plan: <strong style="text-transform:uppercase"><?php echo htmlspecialchars($selectedPlan); ?></strong>
+                    <span style="opacity:0.8;font-weight:500">(&nbsp;<a class="auth-link" href="index.php#pricing">change</a>&nbsp;)</span>
+                </div>
                 <div>
                     <label class="auth-label">Hotel / Business Name</label>
                     <input type="text" name="hotel_name" id="hotelName" value="<?php echo htmlspecialchars($form['hotel_name']); ?>" required placeholder="Grand Addis Hotel" class="auth-input">

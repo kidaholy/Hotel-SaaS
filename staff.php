@@ -186,6 +186,7 @@ $currentUser = getCurrentUser();
 <script>
     window.currentUserId = <?php echo json_encode($currentUser['id']); ?>;
     window.SUPER_ADMIN_ID = <?php echo json_encode(SUPER_ADMIN_ID); ?>;
+    window.tenantPlan = <?php echo json_encode(TenantManager::getCurrentPlanInfo()); ?>;
 </script>
 <script src="public/js/admin-users.js?v=1.2"></script>
 

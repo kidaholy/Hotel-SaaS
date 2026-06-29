@@ -324,9 +324,13 @@ function renderForm() {
 
     // Roles selection
     const roleContainer = document.getElementById('role-selector');
-    roleContainer.innerHTML = [
-        'cashier', 'chef', 'bar', 'admin', 'display', 'store_keeper', 'reception', 'custom'
-    ].map(r => `
+    const planFeatures = window.tenantPlan?.features || [];
+    const availableRoles = ['cashier', 'chef', 'bar', 'admin', 'display'];
+    if (planFeatures.includes('reception')) availableRoles.push('reception');
+    if (planFeatures.includes('store')) availableRoles.push('store_keeper');
+    if (planFeatures.includes('custom_permissions')) availableRoles.push('custom');
+
+    roleContainer.innerHTML = availableRoles.map(r => `
         <button type="button" onclick="setRole('${r}')" class="px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border transition-colors ${role === r ? 'bg-[#c5a059] text-gray-900 border-[#c5a059]' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'}">
             ${r}
         </button>

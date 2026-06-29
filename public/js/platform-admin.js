@@ -11,7 +11,7 @@ const state = {
         owner_name: '',
         owner_username: '',
         owner_password: '',
-        plan: 'trial',
+        plan: 'starter',
         status: 'active',
     },
 };
@@ -185,6 +185,9 @@ function renderTable() {
         const revealed = !!state.revealedPasswords[t.id];
         const password = t.owner_password || '';
         const created = t.created_at ? new Date(t.created_at).toLocaleDateString() : '—';
+        const paidUntilDate = t.paid_until ? new Date(t.paid_until) : null;
+        const paidUntilLabel = paidUntilDate ? paidUntilDate.toLocaleDateString() : '—';
+        const expired = paidUntilDate ? Date.now() > paidUntilDate.getTime() : false;
 
         return `
             <tr class="border-b align-top" style="border-color:#e2ebe6" onmouseover="this.style.background='#f0faf5'" onmouseout="this.style.background=''">
@@ -202,7 +205,8 @@ function renderTable() {
                         ${revealed && !password ? `<button type="button" onclick="verifyPassword('${t.id}')" class="text-[9px] font-bold uppercase tracking-wider" style="color:#1d6b4a">Verify</button>` : ''}
                     </div>
                 </td>
-                <td class="px-4 py-4" style="color:#5c6f68">${esc(t.plan || 'trial')}</td>
+                <td class="px-4 py-4" style="color:#5c6f68">${esc(t.plan || 'starter')}</td>
+                <td class="px-4 py-4 text-xs" style="color:${expired ? '#b91c1c' : '#7a8f85'}">${esc(paidUntilLabel)}${expired ? ' (expired)' : ''}</td>
                 <td class="px-4 py-4">
                     <span class="inline-flex px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
                         ${isActive ? 'active' : 'inactive'}
@@ -254,7 +258,7 @@ window.verifyPassword = async (id) => {
 
 window.openCreate = () => {
     state.editing = null;
-    state.form = { name: '', slug: '', owner_name: '', owner_username: '', owner_password: '', plan: 'trial', status: 'active' };
+    state.form = { name: '', slug: '', owner_name: '', owner_username: '', owner_password: '', plan: 'starter', status: 'active' };
     document.getElementById('modal-title').textContent = 'New Hotel';
     document.getElementById('password-hint').textContent = 'Min. 8 characters';
     fillForm();
@@ -271,7 +275,7 @@ window.openEdit = (id) => {
         owner_name: tenant.owner_name || '',
         owner_username: tenant.owner_username || '',
         owner_password: '',
-        plan: tenant.plan || 'trial',
+        plan: tenant.plan || 'starter',
         status: tenant.status || 'active',
     };
     document.getElementById('modal-title').textContent = 'Edit Hotel';
@@ -294,6 +298,36 @@ function fillForm() {
     document.getElementById('field-plan').value = f.plan;
     document.getElementById('field-status').value = f.status;
     document.getElementById('owner-fields').classList.toggle('hidden', !!state.editing && state.editing.id === 'default');
+
+    const paidUntil = state.editing?.paid_until || '';
+    const paidField = document.getElementById('field-paid-until');
+    if (paidField) {
+        paidField.value = paidUntil || '';
+    }
+
+    const confirmBtn = document.getElementById('confirm-payment-btn');
+    if (confirmBtn) {
+        confirmBtn.disabled = !state.editing;
+        confirmBtn.style.opacity = state.editing ? '' : '0.4';
+        confirmBtn.onclick = async () => {
+            if (!state.editing) return;
+            if (!confirm(`Confirm payment for "${state.editing.name}" and extend 1 month?`)) return;
+            try {
+                const res = await fetch(`api/platform/tenants.php?id=${state.editing.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'confirm_payment', months: 1 }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Request failed');
+                showToast(data.message || 'Payment confirmed', 'success');
+                closeModal();
+                fetchTenants();
+            } catch (err) {
+                alert(err.message);
+            }
+        };
+    }
 }
 
 function autoSlug() {

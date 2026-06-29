@@ -138,13 +138,14 @@ $platformBranding = TenantManager::getPlatformBrandingVars();
                             <th class="px-4 py-3">Username</th>
                             <th class="px-4 py-3">Password</th>
                             <th class="px-4 py-3">Plan</th>
+                            <th class="px-4 py-3">Paid Until</th>
                             <th class="px-4 py-3">Status</th>
                             <th class="px-4 py-3">Created</th>
                             <th class="px-4 py-3">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="tenants-body">
-                        <tr><td colspan="9" class="px-6 py-10 text-center" style="color:#5c6f68">Loading hotels...</td></tr>
+                        <tr><td colspan="10" class="px-6 py-10 text-center" style="color:#5c6f68">Loading hotels...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -183,15 +184,23 @@ $platformBranding = TenantManager::getPlatformBrandingVars();
                             <p id="password-hint" class="auth-muted">Min. 8 characters</p>
                         </div>
                     </div>
-                    <div class="space-y-1.5">
+                        <div class="space-y-1.5">
                         <label class="auth-label">Plan</label>
                         <select id="field-plan" class="auth-input">
-                            <option value="trial">Trial</option>
-                            <option value="basic">Basic</option>
-                            <option value="pro">Pro</option>
-                            <option value="enterprise">Enterprise</option>
-                            <option value="legacy">Legacy</option>
+                            <option value="starter">Starter (1,000 ETB)</option>
+                            <option value="pro">Pro (1,500 ETB)</option>
+                            <option value="premium">Premium (2,000 ETB)</option>
                         </select>
+                    </div>
+                    <div class="space-y-1.5 sm:col-span-2">
+                        <label class="auth-label">Paid Until</label>
+                        <div class="flex gap-2">
+                            <input id="field-paid-until" type="text" class="auth-input" readonly style="font-family:monospace;opacity:0.85">
+                            <button type="button" id="confirm-payment-btn" class="px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider" style="background:#f0faf5;border:1px solid #e2ebe6;color:#1d6b4a;white-space:nowrap">
+                                Confirm payment (+1 month)
+                            </button>
+                        </div>
+                        <p class="auth-muted">Hotels auto-deactivate after this date unless payment is confirmed.</p>
                     </div>
                     <div class="space-y-1.5">
                         <label class="auth-label">Status</label>
@@ -199,6 +208,16 @@ $platformBranding = TenantManager::getPlatformBrandingVars();
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </select>
+                    </div>
+                    <div class="space-y-1.5 sm:col-span-2">
+                        <label class="auth-label">Paid Until</label>
+                        <div class="flex gap-2">
+                            <input id="field-paid-until" type="text" class="auth-input" readonly style="font-family:monospace;opacity:0.85">
+                            <button type="button" id="confirm-payment-btn" class="px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider" style="background:#f0faf5;border:1px solid #e2ebe6;color:#1d6b4a;white-space:nowrap">
+                                Confirm payment (+1 month)
+                            </button>
+                        </div>
+                        <p class="auth-muted">If expired and unpaid, the system will auto-deactivate the hotel on their next request.</p>
                     </div>
                 </div>
                 <div class="flex gap-3 pt-2">

@@ -6,6 +6,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/JsonDB.php';
 require_once __DIR__ . '/SettingsManager.php';
+require_once __DIR__ . '/PlanFeatures.php';
 
 class TenantManager {
     const DEFAULT_TENANT_ID = 'default';
@@ -194,6 +195,106 @@ class TenantManager {
         return platformDb('tenants')->findUnique(['where' => ['id' => $tenantId]]);
     }
 
+    public static function isTenantActive($tenantOrId) {
+        $tenant = is_array($tenantOrId) ? $tenantOrId : self::getTenant($tenantOrId);
+        if (!$tenant || !empty($tenant['isDeleted'])) {
+            return false;
+        }
+        return ($tenant['status'] ?? 'active') === 'active';
+    }
+
+    public static function getCurrentPlan() {
+        $tenantId = $_SESSION['tenant_id'] ?? null;
+        if (!$tenantId) {
+            return 'starter';
+        }
+
+        $tenant = self::getTenant($tenantId);
+        if (!$tenant) {
+            return 'starter';
+        }
+
+        $plan = PlanFeatures::normalizePlan($tenant['plan'] ?? 'starter');
+        $_SESSION['tenant_plan'] = $plan;
+        return $plan;
+    }
+
+    public static function tenantHasFeature($feature) {
+        return PlanFeatures::hasFeature(self::getCurrentPlan(), $feature);
+    }
+
+    public static function getStaffCount() {
+        try {
+            $users = db('users')->findMany(['where' => ['isDeleted' => false]]);
+            return count($users);
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    public static function canAddStaff() {
+        $plan = self::getCurrentPlan();
+        $limit = PlanFeatures::getStaffLimit($plan);
+        if ($limit === null) {
+            return true;
+        }
+        return self::getStaffCount() < $limit;
+    }
+
+    public static function getStaffLimitMessage() {
+        $plan = self::getCurrentPlan();
+        $limit = PlanFeatures::getStaffLimit($plan);
+        if ($limit === null) {
+            return '';
+        }
+        $label = PlanFeatures::getLabel($plan);
+        return "Your {$label} plan allows up to {$limit} staff accounts. Upgrade to add more.";
+    }
+
+    public static function getVipTierCount() {
+        try {
+            $tiers = db('menuTiers')->findMany(['where' => ['isDeleted' => false]]);
+            return count($tiers);
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    public static function canAddVipTier() {
+        $plan = self::getCurrentPlan();
+        $limit = PlanFeatures::getVipTierLimit($plan);
+        if ($limit === null) {
+            return true;
+        }
+        if ($limit === 0) {
+            return false;
+        }
+        return self::getVipTierCount() < $limit;
+    }
+
+    public static function getVipTierLimitMessage() {
+        $plan = self::getCurrentPlan();
+        $limit = PlanFeatures::getVipTierLimit($plan);
+        if ($limit === null) {
+            return '';
+        }
+        if ($limit === 0) {
+            return 'VIP menu tiers require the Pro plan or higher.';
+        }
+        $label = PlanFeatures::getLabel($plan);
+        return "Your {$label} plan allows {$limit} VIP menu tier. Upgrade to Premium for unlimited tiers.";
+    }
+
+    public static function getCurrentPlanInfo() {
+        return PlanFeatures::getPlanInfo(self::getCurrentPlan(), self::getStaffCount());
+    }
+
+    public static function requirePlanFeature($feature) {
+        if (!self::tenantHasFeature($feature)) {
+            PlanFeatures::denyAccess($feature);
+        }
+    }
+
     public static function getBrandingVars() {
         return self::getPlatformBrandingVars();
     }
@@ -264,13 +365,22 @@ class TenantManager {
         ]);
     }
 
-    public static function registerTenant($hotelName, $slug, $ownerName, $username, $password, $email = '') {
+    public static function registerTenant($hotelName, $slug, $ownerName, $username, $password, $email = '', $plan = null) {
         $hotelName = trim($hotelName);
         $slug = self::slugify($slug ?: $hotelName);
         $ownerName = trim($ownerName);
         $username = self::normalizeUsername($username);
         $email = strtolower(trim($email));
         $password = (string) $password;
+        $plan = $plan !== null ? trim((string) $plan) : null;
+
+        $allowedPlans = ['starter', 'pro', 'premium'];
+        if ($plan === null || $plan === '') {
+            $plan = 'starter';
+        }
+        if (!in_array($plan, $allowedPlans, true)) {
+            $plan = 'starter';
+        }
 
         if ($hotelName === '' || $ownerName === '' || $username === '' || $password === '') {
             return ['success' => false, 'message' => 'All fields are required'];
@@ -299,12 +409,15 @@ class TenantManager {
         $dbPath = self::getTenantDbPath($tenantId);
 
         try {
+            $paidUntil = date('c', strtotime('+30 days'));
             $tenant = platformDb('tenants')->create(['data' => [
                 'id' => $tenantId,
                 'slug' => $slug,
                 'name' => $hotelName,
                 'status' => 'active',
-                'plan' => 'trial',
+                'plan' => $plan,
+                'paid_until' => $paidUntil,
+                'billing_status' => 'active',
                 'db_path' => $dbPath,
                 'owner_username' => $username,
                 'owner_email' => $email,
@@ -450,6 +563,9 @@ class TenantManager {
             if (!$tenant) {
                 return ['success' => false, 'message' => 'Hotel not found'];
             }
+            if (!self::isTenantActive($tenant)) {
+                return ['success' => false, 'message' => 'This hotel account has been deactivated'];
+            }
             $accounts = array_values(array_filter($accounts, function ($a) use ($tenant) {
                 return ($a['tenant_id'] ?? '') === $tenant['id'];
             }));
@@ -462,12 +578,15 @@ class TenantManager {
             $tenants = [];
             foreach ($accounts as $account) {
                 $t = self::getTenant($account['tenant_id']);
-                if ($t) {
+                if ($t && self::isTenantActive($t)) {
                     $tenants[] = [
                         'slug' => $t['slug'],
                         'name' => $t['name'],
                     ];
                 }
+            }
+            if (empty($tenants)) {
+                return ['success' => false, 'message' => 'This hotel account has been deactivated'];
             }
             return [
                 'success' => false,
@@ -494,6 +613,10 @@ class TenantManager {
         }
 
         $tenant = self::getTenant($account['tenant_id']);
+        if (!self::isTenantActive($tenant)) {
+            SqliteDB::resetActivePath();
+            return ['success' => false, 'message' => 'This hotel account has been deactivated'];
+        }
 
         return [
             'success' => true,
@@ -508,6 +631,7 @@ class TenantManager {
         $_SESSION['tenant_id'] = $tenant['id'];
         $_SESSION['tenant_slug'] = $tenant['slug'] ?? '';
         $_SESSION['tenant_name'] = $tenant['name'] ?? '';
+        $_SESSION['tenant_plan'] = PlanFeatures::normalizePlan($tenant['plan'] ?? 'starter');
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['name'] = $user['name'];
         $_SESSION['username'] = $user['username'] ?? '';
@@ -899,12 +1023,20 @@ class TenantManager {
             }
             $update['slug'] = $slug;
         }
-        if (!empty($data['plan'])) {
-            $update['plan'] = trim($data['plan']);
+        if (isset($data['plan'])) {
+            $plan = PlanFeatures::normalizePlan(trim($data['plan']));
+            $update['plan'] = $plan;
         }
         if (isset($data['status'])) {
             $status = $data['status'] === 'active' ? 'active' : 'inactive';
             $update['status'] = $status;
+        }
+
+        if (isset($data['paid_until'])) {
+            $paidUntil = trim((string) $data['paid_until']);
+            if ($paidUntil !== '') {
+                $update['paid_until'] = $paidUntil;
+            }
         }
 
         $ownerUsername = isset($data['owner_username']) ? self::normalizeUsername($data['owner_username']) : null;
@@ -1005,6 +1137,68 @@ class TenantManager {
         }
 
         return ['success' => true, 'tenant' => array_merge($tenant, self::getTenantOwnerInfo($tenant))];
+    }
+
+    public static function ensureTenantBillingStatus($tenantId) {
+        $tenant = self::getTenant($tenantId);
+        if (!$tenant || !empty($tenant['isDeleted'])) {
+            return null;
+        }
+
+        $paidUntil = $tenant['paid_until'] ?? '';
+        if ($paidUntil === '') {
+            return $tenant;
+        }
+
+        $now = time();
+        $untilTs = strtotime($paidUntil) ?: 0;
+        if ($untilTs > 0 && $now > $untilTs) {
+            if (($tenant['status'] ?? 'active') === 'active') {
+                platformDb('tenants')->update([
+                    'where' => ['id' => $tenantId],
+                    'data' => [
+                        'status' => 'inactive',
+                        'billing_status' => 'expired',
+                        'updated_at' => date('c'),
+                    ],
+                ]);
+                return self::getTenant($tenantId);
+            }
+        }
+
+        return $tenant;
+    }
+
+    public static function confirmTenantPayment($tenantId, $months = 1) {
+        $tenant = self::getTenant($tenantId);
+        if (!$tenant || !empty($tenant['isDeleted'])) {
+            return ['success' => false, 'message' => 'Hotel not found'];
+        }
+
+        $months = max(1, (int) $months);
+        $now = time();
+        $paidUntil = $tenant['paid_until'] ?? '';
+        $base = $now;
+        $untilTs = strtotime($paidUntil) ?: 0;
+        if ($untilTs > $now) {
+            $base = $untilTs;
+        }
+
+        $newUntil = date('c', strtotime('+' . $months . ' month', $base));
+
+        platformDb('tenants')->update([
+            'where' => ['id' => $tenantId],
+            'data' => [
+                'paid_until' => $newUntil,
+                'billing_status' => 'active',
+                'status' => 'active',
+                'last_payment_confirmed_at' => date('c'),
+                'updated_at' => date('c'),
+            ],
+        ]);
+
+        $tenant = self::getTenant($tenantId);
+        return ['success' => true, 'tenant' => $tenant, 'paid_until' => $newUntil];
     }
 
     public static function deleteTenantForPlatform($tenantId) {

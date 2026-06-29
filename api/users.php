@@ -54,6 +54,16 @@ try {
     if ($method === 'POST') {
         requireAuth(['admin'], 'users:create');
         $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!TenantManager::canAddStaff()) {
+            sendJson(['message' => TenantManager::getStaffLimitMessage()], 403);
+        }
+
+        $role = $data['role'] ?? 'cashier';
+        if ($role === 'custom' && !tenantHasFeature('custom_permissions')) {
+            sendJson(['message' => 'Custom roles require the Premium plan.'], 403);
+        }
+
         $password = $data['password'] ?? '';
         $username = TenantManager::normalizeUsername($data['username'] ?? '');
         $hashed = !empty($password) ? password_hash($password, PASSWORD_BCRYPT) : '';
@@ -139,8 +149,16 @@ try {
         }
         if (array_key_exists('email', $data))   $update['email']              = $data['email'];
         if (!empty($data['role']))    $update['role']               = $data['role'];
-        if (array_key_exists('floorId', $data)) $update['floorId']  = $data['floorId'];
         if (isset($data['assignedCategories'])) $update['assignedCategories'] = $data['assignedCategories'];
+
+        $nextRole = $update['role'] ?? null;
+        if ($nextRole === 'custom' && !tenantHasFeature('custom_permissions')) {
+            sendJson(['message' => 'Custom roles require the Premium plan.'], 403);
+        }
+        if (isset($data['permissions']) && !tenantHasFeature('custom_permissions')) {
+            sendJson(['message' => 'Custom permissions require the Premium plan.'], 403);
+        }
+        if (array_key_exists('floorId', $data)) $update['floorId']  = $data['floorId'];
         if (isset($data['permissions']))        $update['permissions']        = $data['permissions'];
 
         if (!empty($data['password'])) {

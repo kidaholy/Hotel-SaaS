@@ -11,6 +11,13 @@ if (isAuthenticated()) {
 }
 
 $error = '';
+if (isset($_GET['error'])) {
+    if ($_GET['error'] === 'tenant_deactivated') {
+        $error = 'This hotel account has been deactivated. Please contact platform support.';
+    } elseif ($_GET['error'] === 'deactivated') {
+        $error = 'Your account has been deactivated.';
+    }
+}
 $hotelName = $_POST['hotel_name'] ?? $_GET['hotel'] ?? '';
 $username = $_POST['username'] ?? '';
 

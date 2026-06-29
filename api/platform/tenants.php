@@ -36,18 +36,14 @@ try {
         $ownerName = trim($data['owner_name'] ?? '');
         $username = trim($data['owner_username'] ?? $data['username'] ?? '');
         $password = $data['owner_password'] ?? $data['password'] ?? '';
-        $plan = trim($data['plan'] ?? 'trial');
+        $plan = PlanFeatures::normalizePlan(trim($data['plan'] ?? 'starter'));
 
-        $res = TenantManager::registerTenant($hotelName, $slug, $ownerName, $username, $password);
+        $res = TenantManager::registerTenant($hotelName, $slug, $ownerName, $username, $password, '', $plan);
         if (!$res['success']) {
             sendJson(['status' => 'error', 'message' => $res['message']], 400);
         }
 
         $tenantId = $res['tenant']['id'];
-        if ($plan !== 'trial') {
-            TenantManager::updateTenantForPlatform($tenantId, ['plan' => $plan]);
-        }
-
         $tenant = TenantManager::getTenant($tenantId);
         sendJson([
             'status' => 'success',
@@ -72,6 +68,20 @@ try {
             sendJson([
                 'status' => 'success',
                 'message' => $res['message'],
+                'data' => array_merge($tenant, TenantManager::getTenantOwnerInfo($tenant)),
+            ]);
+        }
+
+        if (($data['action'] ?? '') === 'confirm_payment') {
+            $months = (int)($data['months'] ?? 1);
+            $res = TenantManager::confirmTenantPayment($id, $months);
+            if (!$res['success']) {
+                sendJson(['status' => 'error', 'message' => $res['message']], 400);
+            }
+            $tenant = TenantManager::getTenant($id);
+            sendJson([
+                'status' => 'success',
+                'message' => 'Payment confirmed. Plan extended.',
                 'data' => array_merge($tenant, TenantManager::getTenantOwnerInfo($tenant)),
             ]);
         }

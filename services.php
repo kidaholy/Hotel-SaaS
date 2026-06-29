@@ -1,6 +1,12 @@
 <?php
 require_once 'includes/layout.php';
 requireAuth(['admin', 'reception', 'receptionist'], ['services:view', 'reception:access']);
+// Starter plan can access this page for Standard Menu only.
+if (($_SESSION['role'] ?? '') === 'admin') {
+    requirePlanFeature('menu');
+} else {
+    requirePlanFeature('reception');
+}
 $title = "Services Hub";
 renderHeader($title);
 
@@ -91,12 +97,18 @@ $menuTiers = db('menuTiers')->findMany(['where' => ['isDeleted' => false]]) ?: [
                 
                 $tabs = [];
                 if ($isAdmin) {
-                    $tabs = [
-                        ['key'=>'rooms',        'label'=>'Rooms',         'icon'=>'building'],
-                        ['key'=>'menu-standard','label'=>'Standard Menu', 'icon'=>'utensils'],
-                        ['key'=>'vip',          'label'=>'VIP Menus',     'icon'=>'crown'],
-                        ['key'=>'reception',    'label'=>'Reception',     'icon'=>'bell'],
-                    ];
+                    $tabs = [];
+                    // Standard Menu is available for Starter+.
+                    $tabs[] = ['key'=>'menu-standard','label'=>'Standard Menu', 'icon'=>'utensils'];
+
+                    // Pro+ modules
+                    if (tenantHasFeature('reception')) {
+                        $tabs[] = ['key'=>'rooms',     'label'=>'Rooms',      'icon'=>'building'];
+                        $tabs[] = ['key'=>'reception', 'label'=>'Reception',  'icon'=>'bell'];
+                    }
+                    if (tenantHasFeature('vip_tiers')) {
+                        $tabs[] = ['key'=>'vip', 'label'=>'VIP Menus', 'icon'=>'crown'];
+                    }
                 } else {
                     $tabs = [
                         ['key'=>'reception',    'label'=>'Reception',     'icon'=>'bell'],

@@ -26,10 +26,16 @@ $userPermissions = $user['permissions'] ?? [];
 
 $allSlides = [
     ['id' => "financial", 'label' => "Financial Summary", 'permission' => "reports:financial_summary", 'icon' => 'trending-up'],
-    ['id' => "inventory", 'label' => "Inventory Investment", 'permission' => "reports:inventory_investment", 'icon' => 'package'],
-    ['id' => "store", 'label' => "Store Investment", 'permission' => "reports:store_investment", 'icon' => 'warehouse'],
-    ['id' => "menu-sales", 'label' => "Menu Item Sales", 'permission' => "reports:menu_item_sales", 'icon' => 'bar-chart-2'],
+    ['id' => "inventory", 'label' => "Inventory Investment", 'permission' => "reports:inventory_investment", 'icon' => 'package', 'feature' => 'reports_advanced'],
+    ['id' => "store", 'label' => "Store Investment", 'permission' => "reports:store_investment", 'icon' => 'warehouse', 'feature' => 'reports_advanced'],
+    ['id' => "menu-sales", 'label' => "Menu Item Sales", 'permission' => "reports:menu_item_sales", 'icon' => 'bar-chart-2', 'feature' => 'reports_advanced'],
 ];
+
+$tenantPlan = TenantManager::getCurrentPlan();
+$allSlides = array_values(array_filter($allSlides, function ($slide) use ($tenantPlan) {
+    $feature = $slide['feature'] ?? 'reports_basic';
+    return PlanFeatures::hasFeature($tenantPlan, $feature);
+}));
 
 $slides = [];
 if ($isAdmin || in_array('reports:view', $userPermissions)) {

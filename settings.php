@@ -11,6 +11,8 @@ require_once 'includes/TenantManager.php';
 // Auth: admin or specifically permitted
 requireAuth(['admin'], 'settings:view');
 
+$planInfo = TenantManager::getCurrentPlanInfo();
+
 $manager = new SettingsManager();
 $settings = $manager->getAllSettings();
 $platformBranding = TenantManager::getPlatformBrandingVars();
@@ -214,7 +216,7 @@ renderHeader("Settings");
                     <div id="tables-section" class="tab-content hidden p-8 space-y-8">
 
                         <!-- Floors -->
-                        <div class="space-y-4">
+                        <div id="floors-panel" class="space-y-4">
                             <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">Manage Floors</h3>
                             <div class="flex gap-3 p-5 bg-gray-900 border border-gray-700/50 rounded-xl">
                                 <input type="text" id="floorNumberInput" placeholder="Floor Number (e.g. #1)"
@@ -288,6 +290,22 @@ renderHeader("Settings");
 
 <script>
 const AdminSettings = {
+    plan: <?php echo json_encode($planInfo); ?>,
+
+    hasFeature(feature) {
+        return (this.plan.features || []).includes(feature);
+    },
+
+    applyPlanUi() {
+        const stockBtn = document.getElementById('btn-cat-stoc');
+        const distBtn = document.getElementById('btn-cat-dist');
+        if (stockBtn) stockBtn.classList.toggle('hidden', !this.hasFeature('store'));
+        if (distBtn) distBtn.classList.toggle('hidden', !this.hasFeature('distribution'));
+
+        const floorsPanel = document.getElementById('floors-panel');
+        if (floorsPanel) floorsPanel.classList.toggle('hidden', !this.hasFeature('floors'));
+    },
+
     state: {
         activeTab: 'branding',
         activeCategoryType: 'menu',
@@ -336,6 +354,12 @@ const AdminSettings = {
     async initCloudImportButton() {
         const el = document.getElementById('settings-cloud-import');
         if (!el || !window.CloudImportUI) return;
+
+        if (!this.hasFeature('cloud_import')) {
+            el.classList.add('hidden');
+            el.innerHTML = '';
+            return;
+        }
 
         try {
             const status = await CloudImportUI.getStatus();
@@ -396,6 +420,15 @@ const AdminSettings = {
 
     // --- CATEGORIES ---
     switchCategoryType(type) {
+        if (type === 'stock' && !this.hasFeature('store')) {
+            this.showAlert('Stock categories require the Pro plan or higher.', 'error');
+            return;
+        }
+        if (type === 'distribution' && !this.hasFeature('distribution')) {
+            this.showAlert('Distribution categories require the Pro plan or higher.', 'error');
+            return;
+        }
+
         this.state.activeCategoryType = type;
         const keys = ['menu','stock','distribution'];
         const mapId = { menu: 'menu', stock: 'stoc', distribution: 'dist' };
@@ -701,6 +734,7 @@ document.getElementById('vatRateInput').addEventListener('input', (e) => {
 });
 
 // Init
+AdminSettings.applyPlanUi();
 AdminSettings.switchTab('branding');
 lucide.createIcons();
 </script>

@@ -16,6 +16,12 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 TenantManager::bootstrap();
+
+if (isAuthenticated() && empty($_SESSION['is_platform_super_admin']) && !empty($_SESSION['tenant_id'])) {
+    enforceActiveTenantSession();
+    PlanFeatures::enforceForRequest(TenantManager::getCurrentPlan());
+}
+
 TenantManager::applySessionTenant();
 
 /**
@@ -32,6 +38,71 @@ function isAuthenticated() {
 }
 
 /**
+ * Whether the current request targets a JSON API route.
+ */
+function isJsonApiRequest() {
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($uri, '/api/') !== false) {
+        return true;
+    }
+    $script = $_SERVER['SCRIPT_NAME'] ?? '';
+    return strpos($script, '/api/') !== false;
+}
+
+/**
+ * Require a subscription plan feature for the current tenant.
+ */
+function requirePlanFeature($feature) {
+    if (!empty($_SESSION['is_platform_super_admin'])) {
+        return;
+    }
+    TenantManager::requirePlanFeature($feature);
+}
+
+/**
+ * Check if the current tenant has a plan feature.
+ */
+function tenantHasFeature($feature) {
+    if (!empty($_SESSION['is_platform_super_admin'])) {
+        return true;
+    }
+    return TenantManager::tenantHasFeature($feature);
+}
+
+/**
+ * Log out tenant users when their hotel has been deactivated or removed.
+ */
+function enforceActiveTenantSession() {
+    $tenantId = $_SESSION['tenant_id'] ?? null;
+    if (!$tenantId) {
+        return;
+    }
+
+    // Auto-expire tenant access when unpaid.
+    TenantManager::ensureTenantBillingStatus($tenantId);
+
+    if (TenantManager::isTenantActive($tenantId)) {
+        return;
+    }
+
+    logout();
+
+    if (isJsonApiRequest()) {
+        header('Content-Type: application/json');
+        http_response_code(401);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'This hotel account has been deactivated',
+            'code' => 'tenant_deactivated',
+        ]);
+        exit;
+    }
+
+    header('Location: /login.php?error=tenant_deactivated');
+    exit;
+}
+
+/**
  * Require authentication for a page
  */
 function requireAuth($roles = [], $requiredPermission = null) {
@@ -39,6 +110,8 @@ function requireAuth($roles = [], $requiredPermission = null) {
         header('Location: /login.php');
         exit;
     }
+
+    enforceActiveTenantSession();
 
     if (!empty($_SESSION['is_platform_super_admin'])) {
         header('Location: /platform-admin.php');
@@ -101,6 +174,8 @@ function requireApiAuth($roles = [], $requiredPermission = null) {
         echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
         exit;
     }
+
+    enforceActiveTenantSession();
 
     if (!empty($_SESSION['is_platform_super_admin'])) {
         http_response_code(403);
@@ -244,6 +319,8 @@ function getCurrentUser() {
         'tenant_id' => $_SESSION['tenant_id'] ?? null,
         'tenant_slug' => $_SESSION['tenant_slug'] ?? null,
         'tenant_name' => $_SESSION['tenant_name'] ?? null,
+        'tenant_plan' => TenantManager::getCurrentPlan(),
+        'plan_info' => TenantManager::getCurrentPlanInfo(),
         'is_platform_super_admin' => !empty($_SESSION['is_platform_super_admin']),
     ];
 }

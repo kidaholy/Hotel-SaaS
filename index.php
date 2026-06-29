@@ -12,44 +12,52 @@ renderHeader($title, ['nav' => 'kiosk']);
 
 $pricingPlans = [
     [
-        'name' => 'Basic',
-        'price' => '9',
-        'period' => '/mth',
+        'id' => 'starter',
+        'name' => 'Starter',
+        'price' => '1000',
+        'currency' => 'ETB',
+        'period' => '/month',
         'featured' => false,
         'features' => [
-            'Access to all basic features',
-            'Basic reporting and analytics',
+            'POS (Cashier) + Orders',
+            'Kitchen, bar & display screens',
+            'Basic menu & table management',
+            'Basic reports (daily summary)',
             'Up to 10 staff accounts',
-            'POS & order management',
-            'Basic chat and email support',
+            'Standard support',
         ],
     ],
     [
-        'name' => 'Business',
-        'price' => '29',
-        'period' => '/mth',
+        'id' => 'pro',
+        'name' => 'Pro',
+        'price' => '1500',
+        'currency' => 'ETB',
+        'period' => '/month',
         'featured' => true,
         'features' => [
-            'Everything in Basic',
-            'Reception & room management',
-            'Advanced reporting and analytics',
-            'Up to 20 staff accounts',
-            'Inventory & stock control',
-            'Priority chat and email support',
+            'Everything in Starter',
+            'Reception + room management',
+            'Store inventory + stock control',
+            'Distribution categories & floors',
+            '1 VIP menu tier',
+            'Advanced reports + cloud import',
+            'Up to 25 staff accounts',
         ],
     ],
     [
-        'name' => 'Enterprise',
-        'price' => '99',
-        'period' => '/mth',
+        'id' => 'premium',
+        'name' => 'Premium',
+        'price' => '2000',
+        'currency' => 'ETB',
+        'period' => '/month',
         'featured' => false,
         'features' => [
-            'Advanced custom permissions',
-            'Audit log and data history',
+            'Everything in Pro',
+            'Unlimited VIP menu tiers',
+            'Advanced permissions & roles',
+            'Multi-floor & multi-station operations',
             'Unlimited staff accounts',
-            'Website CMS & branding',
-            'Multi-floor operations',
-            'Personalized priority service',
+            'Dedicated onboarding',
         ],
     ],
 ];
@@ -96,7 +104,7 @@ $heroActions = [
         </nav>
         <div class="sl-nav-ctas">
             <a href="login.php" class="sl-btn-outline">Sign In</a>
-            <a href="register.php" class="sl-btn-green">Get Started</a>
+            <a href="#pricing" class="sl-btn-green">Get Started</a>
             <button id="slMobileMenuBtn" class="sl-mobile-toggle" aria-label="Menu"><i data-lucide="menu"></i></button>
         </div>
     </div>
@@ -112,7 +120,7 @@ $heroActions = [
         <a href="#pricing" class="sl-mobile-link">Pricing</a>
         <a href="#integrations" class="sl-mobile-link">Integrations</a>
         <a href="login.php" class="sl-mobile-link">Sign In</a>
-        <a href="register.php" class="sl-mobile-link sl-mobile-cta">Get Started</a>
+        <a href="#pricing" class="sl-mobile-link sl-mobile-cta">Get Started</a>
     </nav>
 </div>
 
@@ -122,7 +130,7 @@ $heroActions = [
         <div class="sl-hero-text reveal">
             <h1>All-in-One SaaS to Simplify Hotel Management</h1>
             <p>Save time, reduce costs, and run your hotel smarter than ever with <?php echo htmlspecialchars($appName); ?> — reception, POS, inventory, staff, and reports in one place.</p>
-            <a href="register.php" class="sl-btn-green sl-btn-lg">Start Your Free Trial Today</a>
+            <a href="#pricing" class="sl-btn-green sl-btn-lg">Start Your Free Trial Today</a>
         </div>
         <div class="sl-hero-preview reveal reveal-d1">
             <div class="sl-admin-preview" aria-hidden="true">
@@ -195,7 +203,7 @@ $heroActions = [
             <span class="sl-eyebrow">Bookings & Reservations</span>
             <h2>Manage every guest stay from one dashboard</h2>
             <p>Handle check-ins, extensions, and checkouts with real-time room status. Your reception team always knows who is arriving, staying, and departing today.</p>
-            <a href="register.php" class="sl-link-arrow">Get started <i data-lucide="arrow-right"></i></a>
+            <a href="#pricing" class="sl-link-arrow">Get started <i data-lucide="arrow-right"></i></a>
         </div>
         <div class="sl-feature-visual reveal reveal-d1">
             <div class="sl-mini-card">
@@ -218,7 +226,7 @@ $heroActions = [
             <span class="sl-eyebrow">Revenue Management</span>
             <h2>Track performance and grow your revenue</h2>
             <p>Live financial reports, category sales, cashier reconciliation, and inventory usage — so you always know what is driving profit across restaurant, bar, and rooms.</p>
-            <a href="register.php" class="sl-link-arrow">Get started <i data-lucide="arrow-right"></i></a>
+            <a href="#pricing" class="sl-link-arrow">Get started <i data-lucide="arrow-right"></i></a>
         </div>
         <div class="sl-feature-visual reveal reveal-d1">
             <div class="sl-mini-card">
@@ -242,7 +250,7 @@ $heroActions = [
             <div class="sl-price-top">
                 <h3><?php echo htmlspecialchars($plan['name']); ?></h3>
                 <div class="sl-price-amount">
-                    <span class="sl-price-currency">$</span>
+                    <span class="sl-price-currency"><?php echo htmlspecialchars($plan['currency'] ?? 'ETB'); ?></span>
                     <span class="sl-price-num"><?php echo htmlspecialchars($plan['price']); ?></span>
                     <span class="sl-price-period"><?php echo htmlspecialchars($plan['period']); ?></span>
                 </div>
@@ -252,7 +260,7 @@ $heroActions = [
                 <li><i data-lucide="check"></i><?php echo htmlspecialchars($feat); ?></li>
                 <?php endforeach; ?>
             </ul>
-            <a href="register.php" class="sl-price-btn<?php echo $plan['featured'] ? ' sl-price-btn-fill' : ''; ?>">Choose Plan</a>
+            <a href="register.php?plan=<?php echo urlencode($plan['id'] ?? strtolower($plan['name'])); ?>" class="sl-price-btn<?php echo $plan['featured'] ? ' sl-price-btn-fill' : ''; ?>">Choose Plan</a>
         </div>
         <?php endforeach; ?>
     </div>
@@ -318,7 +326,7 @@ $heroActions = [
             <h4>Company</h4>
             <a href="#features">Features</a>
             <a href="#pricing">Pricing</a>
-            <a href="register.php">Register</a>
+            <a href="#pricing">Register</a>
         </div>
         <div class="sl-footer-col">
             <h4>Help</h4>
@@ -329,7 +337,7 @@ $heroActions = [
         <div class="sl-footer-col">
             <h4>Resources</h4>
             <a href="#pricing">Plans</a>
-            <a href="register.php">Free Trial</a>
+            <a href="#pricing">Free Trial</a>
             <a href="#features">Modules</a>
         </div>
     </div>

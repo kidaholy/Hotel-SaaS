@@ -21,9 +21,24 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     $db = db('categories');
+
+    $resolveCategoryType = function ($input = null) {
+        if (is_array($input) && isset($input['type'])) {
+            return (string) $input['type'];
+        }
+        return (string) ($_GET['type'] ?? 'menu');
+    };
+
+    $enforceCategoryType = function ($type) {
+        $feature = PlanFeatures::featureForCategoryType($type);
+        if ($feature) {
+            requirePlanFeature($feature);
+        }
+    };
     
     if ($method === 'GET') {
         $type = $_GET['type'] ?? 'menu';
+        $enforceCategoryType($type);
         $categories = $db->findMany([
             'where' => ['isDeleted' => false, 'type' => $type],
             'orderBy' => ['name' => 'asc']
@@ -33,12 +48,14 @@ try {
     elseif ($method === 'POST') {
         $input = json_decode(file_get_contents('php://input'), true);
         if (!$input || !isset($input['name'])) sendJson(['message' => 'Name is required'], 400);
-        
+
+        $type = (string)($input['type'] ?? 'menu');
+        $enforceCategoryType($type);
         $id = bin2hex(random_bytes(16));
         $db->create(['data' => [
             'id' => $id,
             'name' => (string)$input['name'],
-            'type' => (string)($input['type'] ?? 'menu'),
+            'type' => $type,
             'description' => (string)($input['description'] ?? ''),
             'isDeleted' => false,
             'createdAt' => date('Y-m-d H:i:s')
@@ -49,6 +66,11 @@ try {
         $id = $_GET['id'] ?? '';
         $input = json_decode(file_get_contents('php://input'), true);
         if (!$id) sendJson(['message' => 'ID is required'], 400);
+
+        $existing = $db->findUnique(['where' => ['id' => $id]]);
+        if ($existing) {
+            $enforceCategoryType($existing['type'] ?? 'menu');
+        }
         
         $db->update(['id' => $id, 'data' => [
             'name' => (string)$input['name']
@@ -58,8 +80,12 @@ try {
     elseif ($method === 'DELETE') {
         $id = $_GET['id'] ?? '';
         if (!$id) sendJson(['message' => 'ID is required'], 400);
+
+        $existing = $db->findUnique(['where' => ['id' => $id]]);
+        if ($existing) {
+            $enforceCategoryType($existing['type'] ?? 'menu');
+        }
         
-        // Soft delete
         $db->update(['id' => $id, 'data' => ['isDeleted' => true]]);
         sendJson(['status' => 'success']);
     }
