@@ -91,8 +91,8 @@ function renderUserGrid() {
     if (state.users.length === 0) {
         grid.innerHTML = `
             <div class="col-span-full py-20 text-center">
-                <p class="text-4xl mb-4">🌙</p>
-                <p class="text-xs uppercase font-black tracking-widest text-white/20">No team members found</p>
+                <p class="text-6xl mb-6 opacity-20">🌙</p>
+                <p class="text-base uppercase font-black tracking-widest text-gray-500">No team members found</p>
             </div>
         `;
         return;
@@ -111,7 +111,7 @@ function renderUserCard(u) {
     const isRevealed = state.revealedPasswords[u.id];
 
     return `
-        <div class="bg-gray-800/60 p-6 rounded-2xl border border-gray-700/50 hover:bg-gray-800 hover:border-[#c5a059]/30 transition-colors group relative ${isDeactivated ? 'opacity-50 grayscale border-dashed border-gray-600' : ''}">
+        <div class="bg-gray-800/50 p-6 rounded-2xl border border-gray-700/50 hover:bg-gray-800 hover:border-[#c5a059]/30 transition-colors group relative ${isDeactivated ? 'opacity-50 grayscale border-dashed border-gray-600' : ''}">
             <!-- Badges -->
             <div class="flex items-center justify-between gap-4 mb-6">
                 <!-- Header -->

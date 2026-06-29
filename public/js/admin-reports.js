@@ -416,7 +416,7 @@ const ReportHub = {
                                 <td class="px-6 py-4 text-right text-emerald-400 font-bold">-${this.fmtQty(i.consumed)}</td>
                                 <td class="px-6 py-4 text-right font-bold text-gray-200">${this.fmt(i.currentUnitCost * i.closingStock)}</td>
                                 <td class="px-6 py-4 text-center"><span class="px-2 py-1 rounded-md border text-xs font-bold ${i.isLowStock ? 'text-red-400 border-red-500/20 bg-red-500/10' : 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'}">${i.isLowStock ? 'LOW' : 'OK'}</span></td>
-                            </tr>`).join('') || `<tr><td colspan="7" class="py-20 text-center text-[10px] font-black text-gray-600 uppercase tracking-[0.3em]">No matching items found</td></tr>`}
+                            </tr>`).join('') || `<tr><td colspan="7" class="py-20 text-center text-sm font-black text-gray-500 uppercase tracking-[0.3em]">No matching items found</td></tr>`}
                     </tbody>
                 </table>
             </div>`;
@@ -498,7 +498,7 @@ const ReportHub = {
                     <thead><tr class="text-xs font-semibold uppercase tracking-wider text-gray-500 bg-gray-800/50 border-b border-gray-700/50"><th class="px-6 py-4">Item Name</th><th class="px-6 py-4 text-right">Unit Cost</th><th class="px-6 py-4 text-right">In Store</th><th class="px-6 py-4 text-right">IN (Period)</th><th class="px-6 py-4 text-right">OUT (Period)</th><th class="px-6 py-4 text-right">Total Inv.</th><th class="px-6 py-4 text-center">Status</th></tr></thead>
                     <tbody class="divide-y divide-gray-700/30">
                         ${filtered.filter(i => (i.storeQuantity||0) > 0 || (i.storeIn||0) > 0 || (i.storeOut||0) > 0).map(i => `
-                            <tr class="hover:bg-gray-800/50 transition-colors"><td class="px-6 py-4"><p class="font-bold text-gray-200">${i.name}</p><p class="text-xs text-gray-500 font-semibold mt-1">${i.category}</p></td><td class="px-6 py-4 text-right font-bold text-gray-300">${this.fmt(i.weightedAvgCost).replace(' Br','')}</td><td class="px-6 py-4 text-right font-bold text-gray-200">${this.fmtQty(i.storeQuantity)} ${i.unit}</td><td class="px-6 py-4 text-right text-emerald-400 font-bold">+${this.fmtQty(i.storeIn)}</td><td class="px-6 py-4 text-right text-red-400 font-bold">-${this.fmtQty(i.storeOut)}</td><td class="px-6 py-4 text-right font-bold text-[#c5a059]">${this.fmt(i.storeClosingValue)}</td><td class="px-6 py-4 text-center"><span class="px-2 py-1 rounded-md border border-gray-600 bg-gray-700/50 text-[10px] font-bold uppercase text-gray-400">STORE_OK</span></td></tr>`).join('') || `<tr><td colspan="7" class="py-20 text-center text-[10px] font-black text-gray-600 uppercase tracking-[0.3em]">No matching items found</td></tr>`}
+                            <tr class="hover:bg-gray-800/50 transition-colors"><td class="px-6 py-4"><p class="font-bold text-gray-200">${i.name}</p><p class="text-xs text-gray-500 font-semibold mt-1">${i.category}</p></td><td class="px-6 py-4 text-right font-bold text-gray-300">${this.fmt(i.weightedAvgCost).replace(' Br','')}</td><td class="px-6 py-4 text-right font-bold text-gray-200">${this.fmtQty(i.storeQuantity)} ${i.unit}</td><td class="px-6 py-4 text-right text-emerald-400 font-bold">+${this.fmtQty(i.storeIn)}</td><td class="px-6 py-4 text-right text-red-400 font-bold">-${this.fmtQty(i.storeOut)}</td><td class="px-6 py-4 text-right font-bold text-[#c5a059]">${this.fmt(i.storeClosingValue)}</td><td class="px-6 py-4 text-center"><span class="px-2 py-1 rounded-md border border-gray-600 bg-gray-700/50 text-[10px] font-bold uppercase text-gray-400">STORE_OK</span></td></tr>`).join('') || `<tr><td colspan="7" class="py-20 text-center text-sm font-black text-gray-500 uppercase tracking-[0.3em]">No matching items found</td></tr>`}
                     </tbody>
                 </table>
             </div>`;
@@ -699,7 +699,7 @@ const ReportHub = {
                                         <span class="text-[9px] text-[#c5a059] tracking-widest font-black">BR</span>
                                     </p>
                                 </td>
-                            </tr>`).join('') || `<tr><td colspan="4" class="py-20 text-center text-[10px] font-black text-gray-600 uppercase tracking-[0.3em]">No matching sales found</td></tr>`}
+                            </tr>`).join('') || `<tr><td colspan="4" class="py-20 text-center text-sm font-black text-gray-500 uppercase tracking-[0.3em]">No matching sales found</td></tr>`}
                     </tbody>
                 </table>
             </div>`;

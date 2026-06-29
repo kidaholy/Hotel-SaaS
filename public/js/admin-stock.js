@@ -109,8 +109,8 @@ function renderTable() {
     if (!filtered.length) {
         tbody.innerHTML = `
         <tr><td colspan="5" class="py-20 text-center">
-          <p class="text-4xl mb-4">🛒</p>
-          <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-5">Your active stock is empty.<br>Transfer items from the Store to start selling.</p>
+          <p class="text-6xl mb-6 opacity-20">🛒</p>
+          <p class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-5">Your active stock is empty.<br>Transfer items from the Store to start selling.</p>
           <a href="store.php" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-xs font-bold uppercase tracking-wider text-[#c5a059] hover:bg-gray-700 transition-colors">
             <i data-lucide="warehouse" class="w-4 h-4"></i> Go to Store
           </a>

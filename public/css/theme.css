@@ -466,9 +466,17 @@ body.theme-light .text-gray-400 { color: #3d5249 !important; font-weight: 600 !i
 body.theme-light .text-gray-500 { color: #3d5249 !important; font-weight: 500 !important; }
 body.theme-light .text-gray-600 { color: #2d4038 !important; font-weight: 600 !important; }
 
+body.theme-light .text-gray-100,
+body.theme-light .text-gray-200,
 body.theme-light .text-white {
     color: var(--text) !important;
-    font-weight: 600;
+    font-weight: 600 !important;
+}
+
+body.theme-light .text-white\/20,
+body.theme-light .text-white\/40,
+body.theme-light .text-white\/60 {
+    color: rgba(15, 31, 26, 0.45) !important;
 }
 
 /* Nav & sidebar */
@@ -522,4 +530,235 @@ body.theme-light .metric-card p:first-child,
 body.theme-light .glass p.text-sm {
     font-weight: 600 !important;
     color: #3d5249 !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   SERVICES PAGE — light-theme overrides
+   (services.php has inline dark styles that need remapping)
+═══════════════════════════════════════════════════ */
+
+/* Override hardcoded reception CSS vars */
+body.theme-light {
+    --reception-gold: var(--green);
+    --reception-dark: var(--app-bg);
+    --reception-panel: var(--app-surface);
+}
+
+/* Services hub shell — main dark background */
+body.theme-light #services-hub-shell {
+    background-color: var(--app-bg) !important;
+}
+
+/* Services header / tab bar */
+body.theme-light #services-hub-shell > header {
+    background-color: var(--app-surface) !important;
+    border-bottom-color: var(--border) !important;
+    backdrop-filter: none !important;
+}
+
+/* Tab buttons — override dark default + gold active */
+body.theme-light .services-tab-btn:not(.active-tab) {
+    color: var(--muted) !important;
+    border-bottom-color: transparent !important;
+}
+body.theme-light .services-tab-btn:not(.active-tab):hover {
+    color: var(--green) !important;
+}
+body.theme-light .services-tab-btn.active-tab {
+    color: var(--green) !important;
+    border-bottom-color: var(--green) !important;
+}
+
+/* Content panel background */
+body.theme-light #services-content-panel {
+    background-color: var(--app-bg) !important;
+}
+
+/* ── Reception desk header banner ── */
+body.theme-light [class*="bg-[#0f1110]"],
+body.theme-light [class*="bg-[#121413]"],
+body.theme-light [class*="bg-[#111413]"] {
+    background-color: var(--app-surface-2) !important;
+}
+
+/* ── Filter bar container (bg-gray-800/40) and room cards (bg-[#0d0f0e]) ── */
+body.theme-light .bg-gray-800\/40,
+body.theme-light .bg-gray-800\/80,
+body.theme-light .bg-gray-800\/50,
+body.theme-light .bg-gray-800\/30 {
+    background-color: var(--app-surface-2) !important;
+    border-color: var(--border) !important;
+}
+
+/* Very-dark room card backgrounds */
+body.theme-light [class*="bg-[#0d0f0e]"] {
+    background-color: var(--app-surface) !important;
+    border-color: var(--border) !important;
+}
+
+/* ── Filter / date buttons (ALL, TODAY, WEEK …) ── */
+body.theme-light .bg-gray-700\/50,
+body.theme-light .bg-gray-700,
+body.theme-light .bg-gray-600\/50 {
+    background-color: var(--app-surface-2) !important;
+}
+
+/* Active period/status pills — override gold bg with green, light text */
+body.theme-light [class*="bg-[#c5a059]"][class*="text-[#0f1110]"],
+body.theme-light [class*="bg-[#c5a059]"][class*="text-gray-900"] {
+    background-color: var(--green) !important;
+    color: #fff !important;
+}
+body.theme-light [class*="text-[#0f1110]"] {
+    color: var(--text) !important;
+}
+
+/* Stat cards that use dark backgrounds */
+body.theme-light .bg-gray-900,
+body.theme-light .bg-gray-900\/50,
+body.theme-light .bg-gray-900\/60 {
+    background-color: var(--app-surface) !important;
+    border-color: var(--border) !important;
+}
+
+/* ci-field selects with inline bg-[#121413] */
+body.theme-light [class*="bg-[#121413]"] {
+    background-color: var(--app-surface) !important;
+    color: var(--text) !important;
+}
+
+/* ── Form element styles (.lbl / .inp) used inside services.php ── */
+body.theme-light .lbl {
+    color: var(--muted) !important;
+}
+
+body.theme-light .inp {
+    background-color: var(--app-surface) !important;
+    border-color: var(--border) !important;
+    color: var(--text) !important;
+}
+body.theme-light .inp:focus {
+    border-color: var(--green) !important;
+    background-color: var(--white) !important;
+    box-shadow: 0 0 0 3px rgba(29, 107, 74, 0.1) !important;
+}
+body.theme-light .inp option {
+    background-color: var(--white) !important;
+    color: var(--text) !important;
+}
+body.theme-light .inp::placeholder {
+    color: #9aada4 !important;
+}
+
+/* ── Custom input group (ci-*) ── */
+body.theme-light .ci-label {
+    color: var(--muted) !important;
+}
+body.theme-light .ci-field {
+    color: var(--text) !important;
+    background: transparent !important;
+}
+body.theme-light .ci-input-group {
+    border-bottom-color: var(--border) !important;
+}
+body.theme-light .ci-field option {
+    background-color: var(--white) !important;
+    color: var(--text) !important;
+}
+body.theme-light .ci-field::placeholder {
+    color: #9aada4 !important;
+}
+
+/* ── Summary box in modals ── */
+body.theme-light .summary-box {
+    background: var(--app-surface-2) !important;
+    border-color: rgba(29, 107, 74, 0.2) !important;
+}
+body.theme-light .summary-val {
+    color: var(--text) !important;
+}
+body.theme-light .summary-unit {
+    color: var(--muted) !important;
+}
+
+/* ── Payment buttons ── */
+body.theme-light .pay-btn {
+    border-color: var(--border) !important;
+    background-color: var(--app-surface) !important;
+}
+body.theme-light .pay-btn-icon,
+body.theme-light .pay-btn-label {
+    color: var(--muted) !important;
+}
+body.theme-light .pay-radio:checked + .pay-btn {
+    background-color: var(--green-light) !important;
+    border-color: rgba(29, 107, 74, 0.4) !important;
+}
+body.theme-light .pay-radio:checked + .pay-btn .pay-btn-icon,
+body.theme-light .pay-radio:checked + .pay-btn .pay-btn-label {
+    color: var(--green) !important;
+}
+
+/* ── ID upload preview boxes ── */
+body.theme-light .id-preview-box {
+    background: var(--app-surface-2) !important;
+    border-color: var(--border) !important;
+}
+body.theme-light .id-overlay {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: var(--green) !important;
+}
+
+/* ── Gold button → Green button ── */
+body.theme-light .btn-gold {
+    background: linear-gradient(to right, var(--green), var(--green-dark)) !important;
+    color: #fff !important;
+}
+body.theme-light .btn-gold:hover {
+    box-shadow: 0 4px 20px rgba(29, 107, 74, 0.3) !important;
+}
+
+/* ── Modal backgrounds ── */
+body.theme-light .bg-gray-800 {
+    background-color: var(--app-surface) !important;
+}
+body.theme-light .border-gray-700,
+body.theme-light .border-gray-700\/50 {
+    border-color: var(--border) !important;
+}
+body.theme-light .text-gray-200,
+body.theme-light .text-gray-300 {
+    color: var(--text) !important;
+}
+body.theme-light .hover\:text-gray-200:hover {
+    color: var(--green) !important;
+}
+
+/* Gold accent text inside services → green */
+body.theme-light .text-\[\#c5a059\] {
+    color: var(--green) !important;
+}
+body.theme-light .bg-\[\#c5a059\] {
+    background-color: var(--green) !important;
+    color: #fff !important;
+}
+body.theme-light .bg-\[\#c5a059\]\/10 {
+    background-color: var(--green-light) !important;
+}
+body.theme-light .border-\[\#c5a059\]\/30,
+body.theme-light .border-\[\#c5a059\]\/20 {
+    border-color: rgba(29, 107, 74, 0.3) !important;
+}
+
+/* ── Hover states inside modals ── */
+body.theme-light .hover\:bg-gray-700:hover {
+    background-color: var(--green-soft) !important;
+}
+body.theme-light .hover\:border-\[\#c5a059\]:hover,
+body.theme-light .hover\:border-\[\#c5a059\]\/30:hover {
+    border-color: rgba(29, 107, 74, 0.4) !important;
+}
+body.theme-light .hover\:text-\[\#c5a059\]:hover,
+body.theme-light .group:hover .group-hover\:text-\[\#c5a059\] {
+    color: var(--green) !important;
 }

@@ -375,7 +375,7 @@ function renderCategories() {
             <button onclick="deleteCategory('${c.id}')" class="flex-1 py-1.5 rounded-xl bg-red-500/10 text-red-400 text-[9px] font-black uppercase hover:bg-red-500 hover:text-white transition-all">Delete</button>
           </div>` : ''}
         </div>`).join('')}
-        ${!cats.length ? `<p class="col-span-3 text-[10px] uppercase font-black tracking-widest text-gray-600 pt-8 text-center">No ${S.catActiveSubtab} categories yet.</p>` : ''}
+        ${!cats.length ? `<p class="col-span-3 text-sm uppercase font-black tracking-widest text-gray-500 pt-8 text-center">No ${S.catActiveSubtab} categories yet.</p>` : ''}
       </div>
     </div>`;
 }
@@ -456,7 +456,7 @@ function renderExpenses() {
               <th class="p-3 lg:p-5 text-[9px] uppercase font-black tracking-widest text-gray-600 text-right sm:text-left"></th>
             </tr>
           </thead>
-          <tbody>${rows.length ? rows.join('') : `<tr><td colspan="7" class="py-16 text-center text-[10px] uppercase font-black text-gray-600">No expenses for this period.</td></tr>`}</tbody>
+          <tbody>${rows.length ? rows.join('') : `<tr><td colspan="7" class="py-16 text-center text-sm uppercase font-black text-gray-500">No expenses for this period.</td></tr>`}</tbody>
         </table>
       </div>
     </div>`;
@@ -526,7 +526,7 @@ function renderTransfers() {
           ${f}${f==='pending' && S.transfers.filter(t=>t.status==='pending').length ? ` (${S.transfers.filter(t=>t.status==='pending').length})` : ''}
         </button>`).join('')}
       </div>
-      ${!cards.length ? `<div class="py-20 text-center"><p class="text-4xl mb-4">📦</p><p class="text-[10px] uppercase font-black tracking-widest text-gray-600">No ${S.transferFilter} transfer requests.</p></div>` : ''}
+      ${!cards.length ? `<div class="py-20 text-center"><p class="text-6xl mb-6 opacity-20">📦</p><p class="text-base uppercase font-black tracking-widest text-gray-500">No ${S.transferFilter} transfer requests.</p></div>` : ''}
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">${cards.join('')}</div>
     </div>`;
 }
@@ -829,7 +829,7 @@ function setText(id, t) { const el = document.getElementById(id); if (el) el.tex
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function val(id) { return document.getElementById(id)?.value || ''; }
 function setFormVals(obj) { for (const [id, v] of Object.entries(obj)) { const el = document.getElementById(id); if (el) el.value = v; } }
-function empty(msg) { return `<div class="py-24 text-center"><p class="text-5xl mb-5">🏪</p><p class="text-[10px] uppercase font-black tracking-widest text-gray-600">${msg}</p></div>`; }
+function empty(msg) { return `<div class="py-24 text-center"><p class="text-6xl mb-6 opacity-20">🏪</p><p class="text-base uppercase font-black tracking-widest text-gray-500">${msg}</p></div>`; }
 function today() { 
     const d = new Date();
     const Y = d.getFullYear(), M = String(d.getMonth()+1).padStart(2,'0'), D = String(d.getDate()).padStart(2,'0');
