@@ -320,9 +320,20 @@ class TenantManager {
     public static function getPlatformBrandingVars() {
         $b = self::getPlatformBranding();
         $logo = $b['logo_url'] ?? '';
-        $apiLogo = !empty($logo) ? 'api/platform/branding-image.php?type=logo' : '';
+        $ver = '';
+        if (!empty($b['updated_at'])) {
+            $ts = strtotime((string) $b['updated_at']);
+            if ($ts !== false) {
+                $ver = (string) $ts;
+            }
+        }
+        if ($ver === '') {
+            $ver = (string) time();
+        }
+
+        $apiLogo = !empty($logo) ? 'api/platform/branding-image.php?type=logo&v=' . rawurlencode($ver) : '';
         $apiFav = !empty($b['favicon_url'] ?? '')
-            ? 'api/platform/branding-image.php?type=favicon'
+            ? 'api/platform/branding-image.php?type=favicon&v=' . rawurlencode($ver)
             : $apiLogo;
 
         return [

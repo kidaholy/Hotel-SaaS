@@ -132,15 +132,26 @@ function setBrandImagePreviews(logoUrl, faviconUrl) {
     const logo = document.getElementById('brand-logo-preview');
     const fallback = document.getElementById('brand-logo-fallback');
     const favicon = document.getElementById('brand-favicon-preview');
+    const stamp = 't=' + Date.now();
 
     if (logoUrl && logo) {
-        logo.src = logoUrl + (logoUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+        logo.src = logoUrl + (logoUrl.includes('?') ? '&' : '?') + stamp;
         logo.style.display = '';
         if (fallback) fallback.style.display = 'none';
     }
     if (faviconUrl && favicon) {
-        favicon.src = faviconUrl;
+        const favUrl = faviconUrl + (faviconUrl.includes('?') ? '&' : '?') + stamp;
+        favicon.src = favUrl;
         favicon.style.display = '';
+
+        // Update browser tab favicon immediately
+        let link = document.querySelector("link[rel='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.setAttribute('rel', 'icon');
+            document.head.appendChild(link);
+        }
+        link.setAttribute('href', favUrl);
     }
 }
 

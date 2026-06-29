@@ -71,8 +71,8 @@ $heroNavLinks = [
 ];
 
 $heroMetrics = [
-    ['label' => "Today's Revenue", 'value' => '$12,480', 'icon' => 'dollar-sign'],
-    ['label' => 'Average Order', 'value' => '$42.50', 'icon' => 'trending-up'],
+    ['label' => "Today's Revenue", 'value' => 'ETB 12,480', 'icon' => 'banknote'],
+    ['label' => 'Average Order', 'value' => 'ETB 1,420', 'icon' => 'trending-up'],
     ['label' => 'Active Orders', 'value' => '6', 'icon' => 'bell-ring'],
     ['label' => 'Stock Alerts', 'value' => '3', 'icon' => 'package'],
 ];
@@ -201,8 +201,8 @@ $heroActions = [
     <div class="sl-section-inner sl-feature-split">
         <div class="sl-feature-copy reveal">
             <span class="sl-eyebrow">Bookings & Reservations</span>
-            <h2>Manage every guest stay from one dashboard</h2>
-            <p>Handle check-ins, extensions, and checkouts with real-time room status. Your reception team always knows who is arriving, staying, and departing today.</p>
+            <h2>Reception management on a single screen</h2>
+            <p>Handle room bookings, check-ins, checkouts, <strong>stay extensions</strong>, and <strong>re-check-ins</strong> with live room status. Your reception team always knows who is arriving today, who is currently staying, and who is due to depart.</p>
             <a href="#pricing" class="sl-link-arrow">Get started <i data-lucide="arrow-right"></i></a>
         </div>
         <div class="sl-feature-visual reveal reveal-d1">
@@ -356,7 +356,7 @@ $heroActions = [
 }
 body, main, main > div { flex-direction: column !important; width: 100% !important; }
 html { scroll-behavior: smooth; }
-.sl-section-inner { max-width: 1140px; margin: 0 auto; padding: 0 1.5rem; }
+.sl-section-inner { max-width: 1380px; margin: 0 auto; padding: 0 2rem; }
 
 .reveal { opacity: 0; transform: translateY(20px); animation: slUp 0.7s ease forwards; }
 .reveal-d1 { animation-delay: 0.12s; }
@@ -392,7 +392,7 @@ html { scroll-behavior: smooth; }
     border-bottom: 1px solid var(--border);
 }
 .sl-nav-inner {
-    max-width: 1140px; margin: 0 auto; padding: 0 1.5rem; height: 72px;
+    max-width: 1380px; margin: 0 auto; padding: 0 2rem; height: 72px;
     display: flex; align-items: center; gap: 2rem;
 }
 .sl-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--text); }
@@ -440,13 +440,18 @@ html { scroll-behavior: smooth; }
 
 /* HERO */
 .sl-hero {
-    padding: 7rem 0 4rem;
+    padding: 6rem 0 3rem;
+    min-height: calc(100vh - 72px);
     background: linear-gradient(180deg, var(--green-soft) 0%, #fff 55%);
+    display: flex;
+    align-items: center;
 }
 .sl-hero-inner {
-    max-width: 1140px; margin: 0 auto; padding: 0 1.5rem;
-    display: grid; grid-template-columns: 1fr 1.15fr; gap: 3rem; align-items: center;
+    max-width: 1380px; margin: 0 auto; padding: 0 2rem;
+    width: 100%;
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 3.5rem; align-items: center;
 }
+.sl-hero-preview { min-width: 0; }
 .sl-hero-text h1 {
     font-size: clamp(2.25rem, 4.5vw, 3.5rem); font-weight: 900;
     line-height: 1.12; letter-spacing: -0.03em; margin: 0 0 1.25rem;
@@ -859,7 +864,11 @@ html { scroll-behavior: smooth; }
 .sl-footer-bottom { padding: 1.5rem 0; font-size: 0.875rem; font-weight: 500; color: rgba(255,255,255,0.55); }
 
 @media (max-width: 1023px) {
+    .sl-section-inner,
+    .sl-nav-inner,
+    .sl-hero-inner { padding: 0 1.25rem; }
     .sl-hero-inner, .sl-feature-split { grid-template-columns: 1fr; }
+    .sl-hero { min-height: auto; padding: 6rem 0 3rem; }
     .sl-feature-split-reverse .sl-feature-copy, .sl-feature-split-reverse .sl-feature-visual { order: unset; }
     .sl-pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
     .sl-price-featured { transform: none; }
