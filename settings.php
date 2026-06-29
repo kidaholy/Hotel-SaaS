@@ -346,6 +346,13 @@ const AdminSettings = {
             }
 
             el.classList.remove('hidden');
+            const type = this.state.activeCategoryType;
+            const hints = {
+                menu: 'Import menu categories',
+                stock: 'Import stock categories',
+                distribution: 'Import distribution categories',
+            };
+            const hint = hints[type] || hints.menu;
             el.innerHTML = `
                 <button type="button" id="settings-cloud-import-btn"
                     class="w-full flex items-center justify-center gap-2 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-colors"
@@ -353,7 +360,7 @@ const AdminSettings = {
                     <i data-lucide="cloud-download" class="w-4 h-4"></i>
                     <span>${CloudImportUI.buttonLabel(status.platform_name)}</span>
                 </button>
-                <p class="text-[10px] text-gray-500 mt-2 text-center">Import menu &amp; store lists from ${status.platform_name || 'the platform'}.</p>`;
+                <p class="text-[10px] text-gray-500 mt-2 text-center">${hint} from ${status.platform_name || 'the platform'}.</p>`;
 
             document.getElementById('settings-cloud-import-btn')?.addEventListener('click', async () => {
                 try {

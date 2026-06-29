@@ -143,7 +143,7 @@ async function initStoreCloudButtons() {
                 catBtn.querySelector('span').textContent = CloudImportUI.buttonLabel(status.platform_name);
                 catBtn.onclick = async () => {
                     try {
-                        await CloudImportUI.showStorePicker({ onSuccess });
+                        await CloudImportUI.showCategoryPicker('stock', { onSuccess });
                     } catch (err) {
                         alert(err.message || 'Import failed');
                     }

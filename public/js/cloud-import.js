@@ -39,6 +39,16 @@ const CloudImportUI = {
         return data.result;
     },
 
+    async fetchCategories(type) {
+        const params = new URLSearchParams({ list: 'categories', type });
+        const res = await fetch(`api/admin/cloud-import.php?${params}`, { credentials: 'same-origin' });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.message || 'Could not load categories');
+        }
+        return data.result;
+    },
+
     ensureModal() {
         if (this._modalEl) return this._modalEl;
 
@@ -245,7 +255,13 @@ const CloudImportUI = {
         const countEl = modal.querySelector('#cloud-import-count');
         const submitBtn = modal.querySelector('#cloud-import-submit');
 
-        const byKind = { menu: 0, stock: 0, category_menu: 0, category_stock: 0 };
+        const byKind = {
+            menu: 0,
+            stock: 0,
+            category_menu: 0,
+            category_stock: 0,
+            category_distribution: 0,
+        };
         checked.forEach((box) => {
             const kind = box.dataset.kind || '';
             if (byKind[kind] !== undefined) byKind[kind]++;
@@ -256,6 +272,7 @@ const CloudImportUI = {
         if (byKind.menu) parts.push(`${byKind.menu} menu items`);
         if (byKind.category_stock) parts.push(`${byKind.category_stock} store cat.`);
         if (byKind.stock) parts.push(`${byKind.stock} store items`);
+        if (byKind.category_distribution) parts.push(`${byKind.category_distribution} distribution cat.`);
 
         if (countEl) {
             countEl.textContent = checked.length
@@ -377,6 +394,124 @@ const CloudImportUI = {
 
         this._status = null;
         return data;
+    },
+
+    async importCategories(type, selected) {
+        const res = await fetch('api/admin/cloud-import.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ scope: 'categories', type, selected }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.message || 'Import failed');
+        }
+
+        this._status = null;
+        return data;
+    },
+
+    categoryTypeMeta(type) {
+        const labels = {
+            menu: { title: 'Menu categories', icon: 'book-open', stat: 'categories_menu' },
+            stock: { title: 'Stock categories', icon: 'package', stat: 'categories_stock' },
+            distribution: { title: 'Distribution categories', icon: 'truck', stat: 'categories_distribution' },
+        };
+        return labels[type] || labels.menu;
+    },
+
+    async showCategoryPicker(type, options = {}) {
+        const status = await this.getStatus();
+        if (!status.available) {
+            alert(status.is_legacy_tenant
+                ? 'This hotel already uses the template database.'
+                : 'Cloud import is not available right now.');
+            return null;
+        }
+
+        const meta = this.categoryTypeMeta(type);
+        const platformName = status.platform_name || window.PLATFORM_NAME || 'Platform';
+        const cloudCount = status.counts?.[meta.stat] ?? 0;
+        const modal = this.ensureModal();
+
+        modal.querySelector('#cloud-import-title').textContent = `Import ${meta.title.toLowerCase()} from ${platformName}`;
+        modal.querySelector('#cloud-import-subtitle').textContent =
+            `${cloudCount} ${meta.title.toLowerCase()} in the cloud. Select the categories you want, then submit.`;
+
+        const searchInput = modal.querySelector('#cloud-import-search');
+        if (searchInput) {
+            searchInput.placeholder = `Search ${meta.title.toLowerCase()}…`;
+        }
+
+        const listEl = modal.querySelector('#cloud-import-list');
+        listEl.innerHTML = `<p class="text-sm text-gray-400 text-center py-12">Loading ${meta.title.toLowerCase()}…</p>`;
+        modal.classList.remove('hidden');
+
+        let result;
+        try {
+            result = await this.fetchCategories(type);
+        } catch (err) {
+            listEl.innerHTML = `<p class="text-sm text-red-400 text-center py-12">${this.escapeHtml(err.message)}</p>`;
+            return null;
+        }
+
+        const items = result.items || [];
+        const html = items.length
+            ? `<section class="cloud-import-section space-y-2">
+                <div class="flex items-center gap-2 mb-3">
+                    <i data-lucide="${meta.icon}" class="w-4 h-4 text-[#1d6b4a]"></i>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-gray-300">${meta.title} (${items.length})</h3>
+                </div>
+                <div class="space-y-1.5">${items.map((cat) => this.renderCategoryRow(cat, type)).join('')}</div>
+            </section>`
+            : '';
+
+        if (!html.trim()) {
+            listEl.innerHTML = `<p class="text-sm text-gray-400 text-center py-12">No ${meta.title.toLowerCase()} available to import.</p>`;
+            modal.querySelector('#cloud-import-submit').disabled = true;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            return null;
+        }
+
+        listEl.innerHTML = html;
+        this.bindPickerEvents(modal);
+        this.updateSelectionCount(modal);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        return new Promise((resolve) => {
+            const submitBtn = modal.querySelector('#cloud-import-submit');
+            submitBtn.onclick = async () => {
+                const selected = [];
+                modal.querySelectorAll(`.cloud-import-checkbox[data-kind="category_${type}"]:not(:disabled):checked`).forEach((box) => {
+                    if (box.value) selected.push(box.value);
+                });
+
+                if (!selected.length) {
+                    alert('Select at least one category to import.');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Importing…';
+
+                try {
+                    const data = await this.importCategories(type, selected);
+                    this.closeModal();
+                    alert(data.message || 'Import completed.');
+                    if (typeof options.onSuccess === 'function') {
+                        options.onSuccess(data);
+                    }
+                    resolve(data);
+                } catch (err) {
+                    alert(err.message || 'Import failed');
+                    resolve(null);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Import selected';
+                }
+            };
+        });
     },
 
     async showMenuPicker(options = {}) {
@@ -588,14 +723,12 @@ const CloudImportUI = {
         if (scope === 'stocks') {
             return this.showStorePicker(options);
         }
-        if (scope === 'categories' && options.type === 'stock') {
-            return this.showStorePicker(options);
-        }
         if (scope === 'categories') {
-            return this.showBundlePicker({
-                ...options,
-                focus: options.type === 'stock' ? 'store' : 'menu',
-            });
+            const type = options.type || 'menu';
+            if (['menu', 'stock', 'distribution'].includes(type)) {
+                return this.showCategoryPicker(type, options);
+            }
+            return this.showBundlePicker(options);
         }
         return this.showBundlePicker(options);
     },
