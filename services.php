@@ -178,6 +178,9 @@ $menuTiers = db('menuTiers')->findMany(['where' => ['isDeleted' => false]]) ?: [
                 </div>
             </div>
 
+            <!-- Hidden tier field — defaults to standard, updated by openRoomModal -->
+            <input type="hidden" name="room-tier" id="room-tier-value" value="standard">
+
             <div class="flex justify-end gap-3 pt-6 border-t border-gray-700/50 mt-4">
                 <button type="button" onclick="document.getElementById('room-modal').classList.add('hidden')" class="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 transition-colors border border-gray-700 hover:border-gray-600">Cancel</button>
                 <button type="submit" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-[#c5a059] text-gray-900 border border-[#c5a059] hover:bg-[#b59048] transition-colors shadow-sm">Save Room</button>
@@ -625,14 +628,16 @@ AdminServices.openRoomModal = (room = null) => {
         document.getElementById('room-category').value = room.category || '';
         document.getElementById('room-price').value = room.price || '';
         document.getElementById('room-status').value = room.status || 'available';
-        document.querySelectorAll('[name="room-tier"]').forEach(el => el.checked = (el.value === (room.roomServiceMenuTier || 'standard')));
+        const tierEl = document.getElementById('room-tier-value');
+        if (tierEl) tierEl.value = room.roomServiceMenuTier || 'standard';
     } else {
         document.getElementById('room-modal-title').textContent = 'Add New Room';
         document.getElementById('room-id').value = '';
         ['room-number','room-category','room-price'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('room-type').value = 'standard';
         document.getElementById('room-status').value = 'available';
-        document.querySelector('[name="room-tier"][value="standard"]').checked = true;
+        const tierEl = document.getElementById('room-tier-value');
+        if (tierEl) tierEl.value = 'standard';
     }
     document.getElementById('room-modal').classList.remove('hidden');
 };
@@ -640,7 +645,7 @@ AdminServices.openRoomModal = (room = null) => {
 AdminServices._saveRoom = async (e) => {
     e.preventDefault();
     const id = document.getElementById('room-id').value;
-    const tier = document.querySelector('[name="room-tier"]:checked')?.value || 'standard';
+    const tier = document.getElementById('room-tier-value')?.value || 'standard';
     const payload = {
         roomNumber: document.getElementById('room-number').value,
         floorId: document.getElementById('room-floor').value,
